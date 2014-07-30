@@ -459,7 +459,7 @@
 
 			// get product json from server
 				HTTP_POST(
-					'http://pricingapp.designbymobi.us/get-product.php',
+					'http://murmuring-basin-7417.heroku.com/get-product.php',
 					null,
 					function(data){
 
@@ -487,7 +487,7 @@
 
 			// get manufacturer json from server
 				HTTP_POST(
-					'http://pricingapp.designbymobi.us/get-manufacturer.php',
+					'http://murmuring-basin-7417.heroku.com/get-manufacturer.php',
 					null,
 					function(data){
 
