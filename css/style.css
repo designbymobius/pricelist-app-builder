@@ -1,0 +1,350 @@
+/* 
+	http://meyerweb.com/eric/tools/css/reset/ 
+	v2.0 | 20110126
+	License: none (public domain)
+*/
+
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+
+html, body, #viewport {
+
+	width: 100%;
+	font-family: arial, sans-serif;
+}
+
+b {
+
+	font-weight: 900;
+}
+
+.collapsed {
+
+	display: none;
+}
+
+#viewport > section > header > .title,
+#viewport > section > header > .subtitle {
+	
+	transition: all .1s ease-in-out, color .15s ease-out, font-size .15s ease-out;
+}
+
+section {
+
+	display: block;
+	position: relative;
+	width: 95%;
+	margin: 0 auto;
+	overflow: hidden;
+}
+
+section.collapsible {
+
+	border-top: 2px dotted #eee;
+}
+
+section.collapsible.active {
+
+	border-top: 2px solid #444;
+	border-bottom: 2px solid #444;
+}
+
+section.collapsible.active + section.collapsible {
+
+	border-top: none;
+}
+
+#viewport > section:first-of-type{
+
+	border-top: none;
+}
+
+#viewport > section:last-of-type{
+
+	border-bottom: none;
+}
+
+section > header {
+
+	padding: .5em 4%;
+	text-transform: uppercase;
+	font-size: 85%;
+	overflow: hidden;
+
+	cursor: pointer;
+}
+
+section > header:hover > .title {
+
+	color: darkorange;
+}
+
+section > header > .content {
+
+	max-height: 0;
+	overflow: hidden;
+}
+
+section > header > .title,
+section > header > .subtitle {
+
+	width: 50%;
+	float: left;
+}
+
+section > header > .title {
+
+	color: #888;
+	font-weight: 900;
+}
+
+section > header > .subtitle {
+
+	color: #888;
+	text-align: right;
+}
+
+section.active > header > .content {
+
+	float: left;
+	width: 95%;
+	max-height: 60%;
+	padding: 0 0 2.5% 2.5%;
+	text-transform: none;
+}
+
+section.active > header {
+
+	text-transform: uppercase;
+	padding: 0 4%;
+
+	cursor: default;
+}
+
+section.active > header > .title,
+section.active > header > .subtitle {
+
+	width: 100%;
+	float: left;
+}
+
+section.active > header > .title {
+
+	color: #444;
+	font-size: 175%;
+	font-weight: 900;
+	padding-top: .5em;
+}
+
+section > header > .subtitle .confirmation {
+
+	color: green;
+}
+
+section > header > .subtitle .attention {
+
+	color: orange;
+}
+
+
+#about-us {
+
+	background-color: #222;
+}
+
+#about-us + section.collapsible {
+
+	border-top: none;
+}
+
+#about-us.active > header > .title {
+
+	color: #fff;
+	margin-bottom: .55em;
+}
+
+#about-us.active > header > .content {
+
+	color: #bbb;
+	font-size: 155%;
+	text-transform: none;
+}
+
+#about-us.active > header > .content > b {
+
+	color: #fff;
+}
+
+section.active > header .collapsed {
+
+	display: inline-block;
+}
+
+section.active > header .expanded {
+
+	display: none;
+}
+
+section.active > header > .subtitle {
+
+	padding-bottom: 1em;
+	font-size: 110%;
+	text-align: left;
+	color: #000;
+}
+
+#search-products .content {
+
+	padding-bottom: 0;
+	list-style: none;
+	font-size: 105%;
+}
+
+#search-products .content.populated {
+
+	padding-bottom: 2.5%;
+}
+
+#search-products .content > li {
+
+	width: 95%;
+	padding: .65em 2.5%;
+	text-transform: uppercase;
+}
+
+#search-products .content > li:nth-of-type(odd) {
+
+	background-color: #ff8;
+}
+
+#search-products .content.even-length-querystring > li:nth-of-type(odd) {
+
+	background-color: transparent;
+}
+
+#search-products .content.even-length-querystring > li:nth-of-type(even) {
+
+	background-color: #ff8;
+}
+
+#search-products .content.unique-match > li {
+
+	background-color: gold !important;
+	font-weight: 900;
+	color: #550;
+}
+
+#search-products .content > li > .name {
+
+	display: inline-block;
+	width: 65%
+}
+
+#search-products .content > li > .price {
+
+	display: inline-block;
+	width: 30%;
+	margin-left: 5%;
+}
+
+#product-search-input {
+
+	font-size: .85em;
+	padding: .075em .25em;
+}
+
+#product-list .manufacturer {
+
+	width: 45%;
+	padding: .5em 1.25%;
+	margin: 1.25%;
+
+	float: left;
+}
+
+#product-list .manufacturer > header {
+
+	width: 90%;
+	font-size: 1.2em;
+	color: #fff;
+	font-weight: 900;
+	background-color: #444;
+
+	padding: .25em 5%;
+	text-transform: uppercase;
+}
+
+#product-list .product {
+
+	position: relative;
+	width: 95%;
+	font-size: .75em;
+	padding: .5em 2.5%;
+	overflow: hidden;
+}
+
+#product-list .product:nth-of-type(even) {
+
+	background-color: #eee;
+}
+
+#product-list .product .name{
+
+	width: 55%;
+	padding: .25em 2.5%;
+	float: left;
+	text-transform: uppercase;
+}
+
+#product-list .product .retail-price{
+
+	width: 35%;
+	padding: .25em 2.5%;
+	float: left;
+}
+
+#product-list .product .retail-price .currency{
+
+	color: #888;
+	padding-right: .15em;
+}
+
+@media only screen and (min-width:600px)  { 
+
+	#product-list .manufacturer {
+
+		font-size: 112.5%;
+		width: 28%;
+		padding: .5em 1.25%;
+		margin: 1.25%;
+	}
+}
+
+@media only screen and (min-width:900px)  { 
+
+	#product-list .manufacturer {
+
+		font-size: 112.5%;
+		width: 20%;
+		padding: .5em 1.25%;
+		margin: 1.25%;
+	}
+}
+
+@media only screen and (min-width:1280px)  { 
+
+	#product-list .manufacturer {
+
+		font-size: 112.5%;
+		width: 15%;
+		padding: .5em 1.25%;
+		margin: 1.25%;
+	}
+}
