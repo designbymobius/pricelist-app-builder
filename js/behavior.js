@@ -77,7 +77,7 @@
     // enable fastclick
     	var FastClick = require('fastclick');
 
-    	FastClick.attach(document.body);
+    	FastClick(document.body);
 
     // activate search
     	product_search_input.addEventListener('input', function(){
