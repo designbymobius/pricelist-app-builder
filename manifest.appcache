@@ -10,7 +10,7 @@ js/masonry.min.js
 js/persist.min.js
 
 NETWORK:
-*
+http://pricingapp.mizbeach.com
 
 FALLBACK:
 / index.html
