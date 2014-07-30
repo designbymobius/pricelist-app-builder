@@ -74,6 +74,11 @@
     	addClass(about_page_section, "active");
     	active_collapsible = about_page_section;
 
+    // enable fastclick
+    	var FastClick = require('fastclick');
+
+    	FastClick.attach(document.body);
+
     // activate search
     	product_search_input.addEventListener('input', function(){
 

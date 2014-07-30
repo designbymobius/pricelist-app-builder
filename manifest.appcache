@@ -11,7 +11,7 @@ js/persist.min.js
 
 NETWORK:
 http://pricingapp.mizbeach.com
-http://google-analytics.com/analytics.js
+http://google-analytics.com
 
 FALLBACK:
 / index.html
