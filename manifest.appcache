@@ -10,8 +10,8 @@ js/masonry.min.js
 js/persist.min.js
 
 NETWORK:
-http://pricingapp.mizbeach.com
-http://google-analytics.com
+pricingapp.mizbeach.com
+www.google-analytics.com
 
 FALLBACK:
 / index.html
