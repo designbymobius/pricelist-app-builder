@@ -287,9 +287,6 @@
 
 			    				product_search_results_section.innerHTML = markup_to_render;
 			    				search_products_section_subheader.innerHTML =  product_name_search_results.length + " match" + (product_name_search_results.length > 1 ? "es" : "") + "<span class='expanded'> for \"" + value_to_search + "\"</span>";						
-	    						var search_total_duration = Date.now() - search_start_time - 8
-
-	    						console.log( "search + render duration of '" + value_to_search + "' search: " + search_total_duration + "ms" );
 
 	    						if(search_total_duration > 8){
 
@@ -299,6 +296,10 @@
 
 	    				}(), 8);
 
+					var search_total_duration = Date.now() - search_start_time;
+
+					console.log( "search duration of '" + value_to_search + "' search: " + search_total_duration + "ms" );
+	    			
 	    			previous_value = value_to_search;
 	    			previous_total = product_name_search_results.length;
     			}
@@ -490,19 +491,33 @@
 			function render_new_data(){
 
 				// required vars
+				var filter = require('array-filter');
+
+					collection_model_db_json = {};
 					product_json = requested_product_json;
 					manufacturer_json = requested_manufacturer_json;
 					download_timestamp = JSON.stringify(Date.now());
+				
+				// filter unlistable products
+				// create manufacturer collection of products
+					product_db = filter(product_db, function(product){
+
+						if(parseInt(product.WholesalePrice) > 0){
+
+							if( !collection_model_db_json[product.ManufacturerId] ){ collection_model_db_json[product.WholesalePrice] = []; }
+
+							collection_model_db_json[product.WholesalePrice].push(product);
+
+							return true;
+						}
+					});
 
 				// store to device
-					deviceStorage.set('product', requested_product_json);
+					deviceStorage.set('product', JSON.stringify(product_db));
 					deviceStorage.set('manufacturer', requested_manufacturer_json);
 					deviceStorage.set('cache-timestamp', download_timestamp);
 
 					ga('send','event','offline-db','updated','timestamp', download_timestamp);
-
-				// group products by manufacturer
-					products_grouped_by_manufacturer = collection_model_db_json(product_json, 'ManufacturerId');
 
 				// alphabetically sort
 					manufacturer_db = JSON.parse(manufacturer_json);
