@@ -353,17 +353,7 @@
 
 			deviceStorage.get('product', function(ok, cache){
 
-				try{
-
-					var cache_to_json = JSON.parse(cache);
-				}
-
-				catch(e){
-
-					cache_to_json = false;
-				}
-
-				if(cache_to_json != false){
+				if(is_json(cache)){
 				
 					cached_product_json = cache;
 					cached_product_db = cache_to_json;
@@ -375,17 +365,7 @@
 
 			deviceStorage.get('manufacturer', function(ok, cache){
 
-				try{
-
-					var cache_to_json = JSON.parse(cache);
-				}
-
-				catch(e){
-
-					cache_to_json = false;
-				}
-
-				if(cache_to_json != false){
+				if(is_json(cache)){
 
 					cached_manufacturer_json = cache;
 					cached_manufacturer_db = cache_to_json;
