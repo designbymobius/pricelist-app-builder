@@ -386,38 +386,35 @@
 
 					else {
 
-						cache_loading_complete();
+						deviceStorage.get('cache-timestamp', function(ok, timestamp){
+
+							if(typeof timestamp != "undefined" && timestamp != null){ 
+
+								var cache_date = get_beautified_date( parseInt(timestamp) );
+								
+								product_json = cached_product_json;
+								product_db = cached_product_db;
+
+								products_grouped_by_manufacturer = collection_model_db_json(product_db, 'ManufacturerId');
+
+								manufacturer_json = cached_manufacturer_json;
+								manufacturer_db = cached_manufacturer_db;
+
+								about_page_section_subheader.innerHTML = (cache_date ? "<span class='collapsed'>" + cache_date + " - </span><span class='attention'>saved data</span>" : "Prices From last download" );				
+								render_product_list();
+
+								ga('send','event','offline-db', 'loaded');
+							}
+
+							else {
+								
+								about_page_section_subheader.innerHTML = "Downloading prices";				
+							}
+						});
 					}
 				}
 
-				deviceStorage.get('cache-timestamp', function(ok, timestamp){
-
-					if(typeof timestamp != "undefined" && timestamp != null){ 
-
-						var cache_date = get_beautified_date( parseInt(timestamp) ),
-							cache_age = parseInt(Date.now().toString()) - cache_date;
-						
-						product_json = cached_product_json;
-						product_db = cached_product_db;
-
-						products_grouped_by_manufacturer = collection_model_db_json(product_db, 'ManufacturerId');
-
-						manufacturer_json = cached_manufacturer_json;
-						manufacturer_db = cached_manufacturer_db;
-
-						about_page_section_subheader.innerHTML = (cache_date ? "<span class='collapsed'>" + cache_date + " - </span><span class='attention'>saved data</span>" : "Prices From last download" );				
-						render_product_list();
-
-						ga('send','event','offline-db', 'loaded','cache-age', cache_age );
-					}
-
-					else {
-						
-						about_page_section_subheader.innerHTML = "Downloading prices";				
-					}
-
-					cache_loading_complete();
-				});
+				cache_loading_complete();
 			}
 
 			function cache_loading_complete(){
