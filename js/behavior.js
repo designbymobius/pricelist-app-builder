@@ -356,7 +356,7 @@
 				if(is_json(cache)){
 				
 					cached_product_json = cache;
-					cached_product_db = cache_to_json;
+					cached_product_db = JSON.parse(cache);
 				}
 
 				cache_prime_checks_remaining -= 1;
@@ -368,7 +368,7 @@
 				if(is_json(cache)){
 
 					cached_manufacturer_json = cache;
-					cached_manufacturer_db = cache_to_json;
+					cached_manufacturer_db = JSON.parse(cache);
 				}
 
 				cache_prime_checks_remaining -= 1;
