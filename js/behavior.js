@@ -377,7 +377,7 @@
 
 			function is_cache_loaded(){
 
-				if(typeof cached_manufacturer_json == "undefined" || typeof cached_product_json == "undefined"){
+				if( Object.prototype.toString(cached_product_db) !== "[object Array]" || Object.prototype.toString(cached_manufacturer_db) !== "[object Array]" ){
 
 					if(cache_prime_checks_remaining > 0){
 
