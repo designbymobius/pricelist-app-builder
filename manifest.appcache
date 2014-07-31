@@ -12,8 +12,8 @@ js/browserified.js
 
 NETWORK:
 *
-http://fathomless-atoll-7417.heroku.com
 http://www.google-analytics.com
+http://fathomless-atoll-7008.heroku.com
 
 FALLBACK:
 / index.html

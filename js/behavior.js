@@ -459,7 +459,7 @@
 
 			// get product json from server
 				HTTP_POST(
-					'http://fathomless-atoll-7008.heroku.com/get-product.php',
+					'http://pricingapp.designbymobi.us/get-product.php',
 					null,
 					function(data){
 
@@ -487,7 +487,7 @@
 
 			// get manufacturer json from server
 				HTTP_POST(
-					'http://fathomless-atoll-7008.heroku.com/get-manufacturer.php',
+					'http://pricingapp.designbymobi.us/get-manufacturer.php',
 					null,
 					function(data){
 
