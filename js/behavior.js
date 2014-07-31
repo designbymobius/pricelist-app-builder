@@ -136,7 +136,7 @@
 	    			search_start_time = Date.now();
 
 	    			// search manufacturers
-	    				manufacturer_db = ( Object.prototype.toString.call(manufacturer_db) === "[object Array]" ? manufacturer_db : JSON.parse(manufacturer_json));
+	    				manufacturer_db = ( is_array(manufacturer_db) ? manufacturer_db : JSON.parse(manufacturer_json));
 		    			manufacturer_name_search_results = search_array(
 		    				
 		    				manufacturer_db,
@@ -158,7 +158,7 @@
 
 	    			// search products
 	    				var manufacturer_id_model = key_model_db_json(manufacturer_db, "Id");
-	    				product_db = ( Object.prototype.toString.call(product_db) === "[object Array]" ? product_db : JSON.parse(product_json));
+	    				product_db = ( is_array(product_db) ? product_db : JSON.parse(product_json));
 		    			product_name_search_results = search_array(
 		    				
 		    				product_db,
@@ -377,42 +377,38 @@
 
 			function is_cache_loaded(){
 
-				if( Object.prototype.toString(cached_product_db) !== "[object Array]" || Object.prototype.toString(cached_manufacturer_db) !== "[object Array]" ){
+				if( 
+					( is_array(cached_product_db) || is_array(cached_manufacturer_db) ) &&
+					cache_prime_checks_remaining > 0
+				){
+					return;
+				}
 
-					if(cache_prime_checks_remaining > 0){
+				deviceStorage.get('cache-timestamp', function(ok, timestamp){
 
-						return;
+					if(typeof timestamp != "undefined" && timestamp != null && is_array(cached_product_db) && is_array(cached_manufacturer_db) ){ 
+
+						var cache_date = get_beautified_date( parseInt(timestamp) );
+						
+						product_json = cached_product_json;
+						product_db = cached_product_db;
+
+						products_grouped_by_manufacturer = collection_model_db_json(product_db, 'ManufacturerId');
+
+						manufacturer_json = cached_manufacturer_json;
+						manufacturer_db = cached_manufacturer_db;
+
+						about_page_section_subheader.innerHTML = (cache_date ? "<span class='collapsed'>" + cache_date + " - </span><span class='attention'>saved data</span>" : "Prices From last download" );				
+						render_product_list();
+
+						ga('send','event','offline-db', 'loaded');
 					}
 
 					else {
-
-						deviceStorage.get('cache-timestamp', function(ok, timestamp){
-
-							if(typeof timestamp != "undefined" && timestamp != null){ 
-
-								var cache_date = get_beautified_date( parseInt(timestamp) );
-								
-								product_json = cached_product_json;
-								product_db = cached_product_db;
-
-								products_grouped_by_manufacturer = collection_model_db_json(product_db, 'ManufacturerId');
-
-								manufacturer_json = cached_manufacturer_json;
-								manufacturer_db = cached_manufacturer_db;
-
-								about_page_section_subheader.innerHTML = (cache_date ? "<span class='collapsed'>" + cache_date + " - </span><span class='attention'>saved data</span>" : "Prices From last download" );				
-								render_product_list();
-
-								ga('send','event','offline-db', 'loaded');
-							}
-
-							else {
-								
-								about_page_section_subheader.innerHTML = "Downloading prices";				
-							}
-						});
+						
+						about_page_section_subheader.innerHTML = "Downloading prices";				
 					}
-				}
+				});
 
 				cache_loading_complete();
 			}
@@ -694,7 +690,7 @@
             var db,
                 modelled_db = {};
 
-            if(Object.prototype.toString.call( db_json ) === "[object Array]"){
+            if(is_array( db_json )){
 
             	db = db_json;
             }
@@ -720,7 +716,7 @@
             var db,
                 modelled_db = {};
 
-            if(Object.prototype.toString.call( db_json ) === "[object Array]"){
+            if(is_array( db_json )){
 
             	db = db_json;
             }
@@ -831,5 +827,11 @@
     		}
 
     		return true;
+    	}
+
+    // is array
+    	function is_array(input){
+
+    		return Object.prototype.toString(input) === "[object Array]";
     	} 
 }());
