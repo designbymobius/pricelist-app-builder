@@ -21,7 +21,12 @@
 		about_page_section,
 		about_page_section_subheader,
 
-		product_search_input;
+		product_search_input,
+    	search_buffer, 
+    	search_buffer_duration;
+
+    // set initial search buffer duration
+    	search_buffer_duration = 200;
 
 	// set appcache listeners
 
@@ -84,8 +89,7 @@
 
     		var value_to_search,
     			previous_value,
-    			previous_total,
-    			search_buffer;
+    			previous_total;
 
     		return function(e){
 
@@ -96,9 +100,12 @@
     				manufacturer_name_search_results,
     				matched_manufacturer_id_array = [];
 
-    			if(typeof search_buffer != 'undefined'){ clearTimeout(search_buffer); }
+    			if(typeof search_buffer != 'undefined'){ 
+    				clearTimeout(search_buffer); 
+    				search_buffer_duration = 305; 
+    			}
 
-    			search_buffer = setTimeout(do_search, 222);
+    			search_buffer = setTimeout(do_search, search_buffer_duration);
 
     			value_to_search = current_value.toLowerCase();
 
@@ -288,20 +295,19 @@
 			    				product_search_results_section.innerHTML = markup_to_render;
 			    				search_products_section_subheader.innerHTML =  product_name_search_results.length + " match" + (product_name_search_results.length > 1 ? "es" : "") + "<span class='expanded'> for \"" + value_to_search + "\"</span>";						
 
-	    						if(search_total_duration > 8){
-
-	    							ga('send','event','slow-search','log', { 'key': value_to_search, 'duration': search_total_duration});
-	    						}
+								var search_total_duration = Date.now() - search_start_time;
+								console.log( search_total_duration + "ms to render search for '" + value_to_search + "'" );
+	    						
+	    						if(search_total_duration > 16){ ga('send','event','search','slow-search'); }
 	    					}
 
-	    				}(), 8);
+	    				}(), 0);
 
-					var search_total_duration = Date.now() - search_start_time;
-
-					console.log( "search duration of '" + value_to_search + "' search: " + search_total_duration + "ms" );
 	    			
 	    			previous_value = value_to_search;
 	    			previous_total = product_name_search_results.length;
+	    			delete search_buffer;
+	    			search_buffer_duration = 200;
     			}
     		}
     	}());
