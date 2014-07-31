@@ -1,19 +1,15 @@
 CACHE MANIFEST
-# Time: Fri Jul 14 2004 00:00:42 GMT+0100 (W. Central Africa Standard Time)
+# Time: Fri Jul 14 2004 10:00:42 GMT+0100 (W. Central Africa Standard Time)
 
 CACHE:
 index.html
 css/style.css
 js/behavior.js
-js/pubsub.js
 js/masonry.min.js
-js/persist.min.js
 js/browserified.js
 
 NETWORK:
 *
-http://www.google-analytics.com
-http://fathomless-atoll-7008.heroku.com
 
 FALLBACK:
 / index.html
