@@ -832,6 +832,6 @@
     // is array
     	function is_array(input){
 
-    		return Object.prototype.toString(input) === "[object Array]";
+    		return Object.prototype.toString.call(input) === "[object Array]";
     	} 
 }());
