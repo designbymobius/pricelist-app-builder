@@ -272,7 +272,7 @@ section.active > header > .subtitle {
 #product-list .manufacturer > header {
 
 	width: 90%;
-	font-size: 1.2em;
+	font-size: 1em;
 	color: #fff;
 	font-weight: 900;
 	background-color: #444;
@@ -284,9 +284,9 @@ section.active > header > .subtitle {
 #product-list .product {
 
 	position: relative;
-	width: 95%;
-	font-size: .75em;
-	padding: .5em 2.5%;
+	width: 93%;
+	font-size: .7em;
+	padding: .5em 3.5%;
 	overflow: hidden;
 }
 
@@ -303,14 +303,14 @@ section.active > header > .subtitle {
 	text-transform: uppercase;
 }
 
-#product-list .product .retail-price{
+#product-list .product .wholesale-price{
 
 	width: 35%;
 	padding: .25em 2.5%;
 	float: left;
 }
 
-#product-list .product .retail-price .currency{
+#product-list .product .wholesale-price .currency{
 
 	color: #888;
 	padding-right: .15em;
