@@ -224,12 +224,12 @@ section.active > header > .subtitle {
 	background-color: #ff8;
 }
 
-#search-products .content.even-length-querystring > li:nth-of-type(odd) {
+#search-products .content.swap-row-color > li:nth-of-type(odd) {
 
 	background-color: transparent;
 }
 
-#search-products .content.even-length-querystring > li:nth-of-type(even) {
+#search-products .content.swap-row-color > li:nth-of-type(even) {
 
 	background-color: #ff8;
 }

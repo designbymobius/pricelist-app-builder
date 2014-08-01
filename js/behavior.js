@@ -89,7 +89,7 @@
 
     		var value_to_search,
     			previous_value,
-    			previous_total;
+    			previous_matches;
 
     		return function(e){
 
@@ -112,7 +112,8 @@
     			function do_search(){
 
     				// required vars
-    					var markup_to_render = "";
+    					var markup_to_render = "",
+    						array_sort;
 
     				// don't search if ...
 		    			if( typeof product_json == 'undefined' || // no product data
@@ -128,14 +129,14 @@
 		    			if(value_to_search === ""){
 
 		    				previous_value = "";
-		    				previous_total = "";
+		    				previous_matches = "";
 
 		    				product_search_results_section.innerHTML = "";
 		    				search_products_section_subheader.innerHTML = "";
 
 							removeClass(product_search_results_section, "populated");
 							removeClass(product_search_results_section, "unique-match");
-							removeClass(product_search_results_section, "even-length-querystring");
+							removeClass(product_search_results_section, "swap-row-color");
 
 		    				return;
 		    			}
@@ -203,7 +204,10 @@
 
 	    			// sort results
 	    				var manufacturer_id_model = key_model_db_json(manufacturer_db, 'Id');
-	    				product_name_search_results.sort(function(a,b){
+	    				
+	    				array_sort = require('stable');
+
+	    				array_sort(product_name_search_results, function(a,b){
 
 	    					var name_of_a,
 	    						name_of_b,
@@ -254,34 +258,24 @@
 	    			// render results
 	    				setTimeout(function(){
 
-	    					var total_previous_matches = previous_total,
-	    						total_current_matches = product_name_search_results.length;
+	    					var cached_previous_matches = previous_matches,
+	    						cached_current_matches = product_name_search_results;
 
 	    					return function(){
 
-								if(product_name_search_results.length > 0){
+	    						//  has results
+									if(cached_current_matches.length > 0){ addClass(product_search_results_section, "populated"); }
 
-									addClass(product_search_results_section, "populated");
-								}
+									else{ removeClass(product_search_results_section, "populated"); }
 
-								else {
+								// results changed 
+									if( is_array(cached_previous_matches) && !array_is_equal(cached_current_matches, cached_previous_matches) ){
 
-									removeClass(product_search_results_section, "populated");
-								}
-
-								if(total_current_matches !== total_previous_matches){
-
-									if(value_to_search.length % 2 == 0){
-
-										addClass(product_search_results_section, "even-length-querystring");
+										toggleClass(product_search_results_section, "swap-row-color");
 									}
 
-									else {
-										
-										removeClass(product_search_results_section, "even-length-querystring");
-									}
-
-									if(total_current_matches === 1){
+								// unique result
+									if(cached_current_matches.length === 1){
 
 										addClass(product_search_results_section, "unique-match");
 									}
@@ -290,24 +284,23 @@
 
 										removeClass(product_search_results_section, "unique-match");
 									}
-								}
 
-			    				product_search_results_section.innerHTML = markup_to_render;
-			    				search_products_section_subheader.innerHTML =  product_name_search_results.length + " match" + (product_name_search_results.length > 1 ? "es" : "") + "<span class='expanded'> for \"" + value_to_search + "\"</span>";						
-
-								var search_total_duration = Date.now() - search_start_time;
-								console.log( search_total_duration + "ms to render search for '" + value_to_search + "'" );
-	    						
-	    						if(search_total_duration > 16){ ga('send','event','search','slow-search'); }
+								// render
+				    				product_search_results_section.innerHTML = markup_to_render;
+				    				search_products_section_subheader.innerHTML =  product_name_search_results.length + " match" + (product_name_search_results.length > 1 ? "es" : "") + "<span class='expanded'> for \"" + value_to_search + "\"</span>";						
+									    						
+								// logging
+									var search_total_duration = Date.now() - search_start_time;								
+		    						
+		    						if(search_total_duration > 16){ ga('send','event','search','slow-search'); }
 	    					}
-
 	    				}(), 0);
 
-	    			
-	    			previous_value = value_to_search;
-	    			previous_total = product_name_search_results.length;
-	    			delete search_buffer;
-	    			search_buffer_duration = 200;
+	    			// reset search internals
+		    			previous_value = value_to_search;
+		    			previous_matches = product_name_search_results;
+		    			delete search_buffer;
+		    			search_buffer_duration = 200;
     			}
     		}
     	}());
@@ -701,9 +694,25 @@
 				array_index = array_length - i;
 				current_item = array_to_walk[array_index];
 
-				processing_function( current_item );
+				processing_function( current_item, i );
 			}
-		}    
+		}
+
+	// array is equal
+		function array_is_equal(array_1, array_2){
+
+			var result = false;
+
+			if( !(array_1 instanceof Array) || !(array_2 instanceof Array) || array_1.length !== array_2.length){ return result; }
+
+			array_each(array_1, function(item, index){ 
+
+				if(item != array_2[index]){ return result; } 
+			});
+
+			result = true;
+			return result;
+		}
 
     // model db by collection
         function collection_model_db_json( db_json, key ){
@@ -799,6 +808,14 @@
 	        else if(b > a){ return -1; }
 	        else { return 0; }
 	    }
+
+	// toggle class
+		function toggleClass(element, nameOfClass){
+
+			if(hasClass(element,nameOfClass)){ removeClass(element, nameOfClass); }
+
+			else{ addClass(element, nameOfClass); } 
+		}
 
     // check if class exists
         function hasClass(element, nameOfClass){
