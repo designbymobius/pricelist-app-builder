@@ -272,7 +272,7 @@ section.active > header > .subtitle {
 #product-list .manufacturer > header {
 
 	width: 90%;
-	font-size: 1em;
+	font-size: .9em;
 	color: #fff;
 	font-weight: 900;
 	background-color: #444;
@@ -285,7 +285,7 @@ section.active > header > .subtitle {
 
 	position: relative;
 	width: 93%;
-	font-size: .7em;
+	font-size: .55em;
 	padding: .5em 3.5%;
 	overflow: hidden;
 }
@@ -320,7 +320,6 @@ section.active > header > .subtitle {
 
 	#product-list .manufacturer {
 
-		font-size: 98.5%;
 		width: 28%;
 		padding: .5em 1.25%;
 		margin: 1.25%;
