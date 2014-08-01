@@ -1,12 +1,11 @@
 CACHE MANIFEST
-# Time: Fri Jul 14 2004 00:00:38 GMT+0100 (W. Central Africa Standard Time)
+# Time: Fri Jul 14 2004 00:01:34 GMT+0100 (W. Central Africa Standard Time)
 
 CACHE:
 index.html
 css/style.css
 css/icon-font.css
 js/behavior.js
-js/masonry.min.js
 js/browserified.js
 font/icomoon.eot
 font/icomoon.woff
@@ -18,3 +17,11 @@ NETWORK:
 
 FALLBACK:
 / index.html
+css/style.css css/style.css
+css/icon-font.css css/icon-font.css
+js/behavior.js js/behavior.js
+js/browserified.js js/browserified.js
+font/icomoon.eot font/icomoon.eot
+font/icomoon.woff font/icomoon.woff
+font/icomoon.ttf font/icomoon.ttf
+font/icomoon.svg font/icomoon.svg
