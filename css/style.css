@@ -36,7 +36,8 @@ b {
 	transition: all .1s ease-in-out, color .15s ease-out, font-size .15s ease-out;
 }
 
-section {
+section, 
+#product-list {
 
 	display: block;
 	position: relative;

@@ -6,6 +6,7 @@ index.html
 css/style.css
 css/icon-font.css
 js/behavior.js
+js/masonry.min.js
 js/browserified.js
 font/icomoon.eot
 font/icomoon.woff
