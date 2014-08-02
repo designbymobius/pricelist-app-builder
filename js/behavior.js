@@ -134,7 +134,6 @@
 		    				product_search_results_section.innerHTML = "";
 		    				search_products_section_subheader.innerHTML = "";
 
-							removeClass(product_search_results_section, "populated");
 							removeClass(product_search_results_section, "unique-match");
 							removeClass(product_search_results_section, "swap-row-color");
 
@@ -262,11 +261,6 @@
 	    						cached_current_matches = product_name_search_results;
 
 	    					return function(){
-
-	    						//  has results
-									if(cached_current_matches.length > 0){ addClass(product_search_results_section, "populated"); }
-
-									else{ removeClass(product_search_results_section, "populated"); }
 
 								// results changed 
 									if( is_array(cached_previous_matches) && !array_is_equal(cached_current_matches, cached_previous_matches) ){
