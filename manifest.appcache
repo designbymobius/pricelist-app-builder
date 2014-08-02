@@ -14,14 +14,11 @@ font/icomoon.svg
 
 NETWORK:
 *
+http://*
+https://*
 
 FALLBACK:
 / index.html
-css/style.css css/style.css
-css/icon-font.css css/icon-font.css
-js/behavior.js js/behavior.js
-js/browserified.js js/browserified.js
-font/icomoon.eot font/icomoon.eot
-font/icomoon.woff font/icomoon.woff
-font/icomoon.ttf font/icomoon.ttf
-font/icomoon.svg font/icomoon.svg
+
+SETTINGS:
+fast
