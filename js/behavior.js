@@ -638,8 +638,14 @@
 					}
 				}
 
+				var sample_manufacturer_node = container.getElementsByClassName('manufacturer')[0];
+
 			// activate masonry
-				pricelist_masonry = new Masonry( container );
+				pricelist_masonry = new Masonry( container, {
+
+					"columnWidth": sample_manufacturer_node
+				});
+
 				pricelist_masonry.bindResize();
 		}
 
