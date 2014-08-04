@@ -331,7 +331,7 @@
             	ga('send','event','section-view', click_target.id );
 		});
 
-	// check for cached prices
+	// render cached prices
 
 		render_cached_product_list();
 
@@ -372,7 +372,7 @@
 			function is_cache_loaded(){
 
 				if( 
-					( is_array(cached_product_db) || is_array(cached_manufacturer_db) ) &&
+					( !is_array(cached_product_db) || !is_array(cached_manufacturer_db) ) &&
 					cache_prime_checks_remaining > 0
 				){
 					return;
@@ -380,19 +380,25 @@
 
 				deviceStorage.get('cache-timestamp', function(ok, timestamp){
 
-					if(typeof timestamp != "undefined" && timestamp != null && is_array(cached_product_db) && is_array(cached_manufacturer_db) ){ 
+					if(typeof timestamp != "undefined" && isNaN( parseInt(timestamp)) === false && is_array(cached_product_db) && is_array(cached_manufacturer_db) ){ 
 
-						var cache_date = get_beautified_date( parseInt(timestamp) );
-						
+						var cache_age,
+							cache_save_time,
+
+							cache_timestamp = parseInt(timestamp),
+							cache_moment = require('moment')(cache_timestamp);
+
+						cache_age = cache_moment.fromNow();
+						cache_save_time = cache_moment.calendar();
+
 						product_json = cached_product_json;
 						product_db = cached_product_db;
-
 						products_grouped_by_manufacturer = collection_model_db_json(product_db, 'ManufacturerId');
 
 						manufacturer_json = cached_manufacturer_json;
 						manufacturer_db = cached_manufacturer_db;
 
-						about_page_section_subheader.innerHTML = (cache_date ? "<span class='collapsed'>" + cache_date + " - </span><span class='attention'>saved data</span>" : "Prices From last download" );				
+						about_page_section_subheader.innerHTML = (cache_age ? "<span class='attention'><span class='collapsed'>" + cache_save_time + "</span><span class='expanded'>" + cache_age + "</span></span>" : "Prices From last download" );				
 						render_product_list();
 
 						ga('send','event','offline-db', 'loaded');
@@ -567,10 +573,12 @@
 
 				empty_manufacturers_index_array = [],
 				current_empty_manufacturer,
-				manufacturer_nodes;
+				manufacturer_nodes,
+				array_sort;
 
 			// alpha sort manufacturers
-				manufacturer_db.sort(arrayAlphaSort);
+				array_sort = require('stable');
+				array_sort(manufacturer_db, arrayAlphaSort);
 
 			// iterate over manufacturer list
 				for(var i = manufacturer_db.length; i >= 1; i -= 1 ){
@@ -637,7 +645,8 @@
 			// activate masonry
 				pricelist_masonry = new Masonry( container, {
 
-					"columnWidth": sample_manufacturer_node
+					"columnWidth": sample_manufacturer_node,
+					"containerStyle": null
 				});
 
 				pricelist_masonry.bindResize();

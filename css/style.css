@@ -143,6 +143,7 @@ section.active > header > .title {
 	font-size: 175%;
 	font-weight: 900;
 	padding-top: .5em;
+	margin-bottom: .25em;
 }
 
 section > header > .subtitle .confirmation {
@@ -152,7 +153,9 @@ section > header > .subtitle .confirmation {
 
 section > header > .subtitle .attention {
 
-	color: orange;
+	background-color: orange;
+	padding: .25em .5em;
+	color: #fff;
 }
 
 
