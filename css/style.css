@@ -146,16 +146,21 @@ section.active > header > .title {
 	margin-bottom: .25em;
 }
 
+section > header > .subtitle .confirmation,
+section > header > .subtitle .attention {
+	
+	padding: .25em .5em;
+	color: #fff;
+}
+
 section > header > .subtitle .confirmation {
 
-	color: green;
+	background-color: green;
 }
 
 section > header > .subtitle .attention {
 
 	background-color: orange;
-	padding: .25em .5em;
-	color: #fff;
 }
 
 

@@ -495,7 +495,7 @@
 					collection_model_db_json = {};
 					product_json = requested_product_json;
 					manufacturer_json = requested_manufacturer_json;
-					download_timestamp = JSON.stringify(Date.now());
+					download_timestamp = Date.now();
 				
 				// filter unlistable products
 				// create manufacturer collection of products
@@ -516,14 +516,14 @@
 					deviceStorage.set('manufacturer', requested_manufacturer_json);
 					deviceStorage.set('cache-timestamp', download_timestamp);
 
-					ga('send','event','offline-db','updated','timestamp', download_timestamp);
+					ga('send','event','offline-db','db-updated');
 
 				// alphabetically sort
 					manufacturer_db = JSON.parse(manufacturer_json);
 
 				// do rendering
 					render_product_list();
-					about_page_section_subheader.innerHTML = "<span class='collapsed'>" + get_beautified_date() + " - </span><span class='confirmation'>current prices</span>";
+					about_page_section_subheader.innerHTML = "<span class='collapsed confirmation'>" + require('moment')(download_timestamp).calendar() + "</span><span class='expanded confirmation'>current prices</span>";
 			}
 		
 			function all_metadata_loaded(){
