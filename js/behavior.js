@@ -80,7 +80,7 @@
 
 	    	addClass(about_us_section, "active");
 	    	active_collapsible = about_us_section;
-    	}, 1440);
+    	}, 444);
 
     // enable fastclick
     	require('fastclick')(document.body);
