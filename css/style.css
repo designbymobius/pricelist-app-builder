@@ -148,7 +148,7 @@ section.active > header > .title {
 
 section > header > .subtitle .confirmation,
 section > header > .subtitle .attention {
-	
+
 	padding: .25em .5em;
 	color: #fff;
 }
@@ -183,7 +183,7 @@ section > header > .subtitle .attention {
 #about-us.active > header > .content {
 
 	color: #bbb;
-	font-size: 155%;
+	font-size: 85%;
 	text-transform: none;
 }
 
