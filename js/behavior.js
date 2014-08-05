@@ -206,7 +206,7 @@
 	    				
 	    				array_sort = require('stable');
 
-	    				array_sort(product_name_search_results, function(a,b){
+	    				product_name_search_results = array_sort(product_name_search_results, function(a,b){
 
 	    					var name_of_a,
 	    						name_of_b,
@@ -578,7 +578,7 @@
 
 			// alpha sort manufacturers
 				array_sort = require('stable');
-				array_sort(manufacturer_db, arrayAlphaSort);
+				manufacturer_db = array_sort(manufacturer_db, arrayAlphaSort);
 
 			// iterate over manufacturer list
 				for(var i = manufacturer_db.length; i >= 1; i -= 1 ){
@@ -594,7 +594,7 @@
 
 					// alphabetically sort current manufacturer's products
 						current_manufacturer_products = products_grouped_by_manufacturer[ current_manufacturer.Id ];
-						current_manufacturer_products.sort(arrayAlphaSort);			
+						current_manufacturer_products = array_sort( current_manufacturer_products, arrayAlphaSort);			
 
 					// iterate over current manufacturer's products
 						for (var ii = current_manufacturer_products.length; ii >= 1; ii--) {
@@ -810,11 +810,11 @@
     // alphabetical sort
 	    function arrayAlphaSort(a, b){
 
-	        a = a.Name.toLowerCase();
-	        b = b.Name.toLowerCase();
+	        var a_comparing_prop = a.Name.toLowerCase();
+	        var b_comparing_prop = b.Name.toLowerCase();
 
-	        if(a > b){ return 1; }
-	        else if(b > a){ return -1; }
+	        if(a_comparing_prop > b_comparing_prop){ return 1; }
+	        else if(b_comparing_prop > a_comparing_prop){ return -1; }
 	        else { return 0; }
 	    }
 
