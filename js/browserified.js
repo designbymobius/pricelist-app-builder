@@ -1,30 +1,130 @@
-require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"array-filter":[function(require,module,exports){
+require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"./cjs-pubsub.js":[function(require,module,exports){
+// PROJECT BLACKBOX
 
-/**
- * Array#filter.
- *
- * @param {Array} arr
- * @param {Function} fn
- * @param {Object=} self
- * @return {Array}
- * @throw TypeError
- */
 
-module.exports = function (arr, fn, self) {
-  if (arr.filter) return arr.filter(fn);
-  if (void 0 === arr || null === arr) throw new TypeError;
-  if ('function' != typeof fn) throw new TypeError;
-  var ret = [];
-  for (var i = 0; i < arr.length; i++) {
-    if (!hasOwn.call(arr, i)) continue;
-    var val = arr[i];
-    if (fn.call(self, val, i, arr)) ret.push(val);
-  }
-  return ret;
-};
+	module.exports = function(){
+		
+		// PUBSUB INTERNALS
+		// Publishers announce when an event of note has occured
+		// Subscribers react when they get the announcement of the change
+		
+		// Pubsub System Closure
+			var dxm = function(){
 
-var hasOwn = Object.prototype.hasOwnProperty;
+			// required vars
+				var settings, subscribers, log; 
 
+			// set default values
+				settings = {
+
+					consoleLog: false
+				};
+
+				subscribers = [];
+				log = [];
+		
+				/* SUBSCRIBE */
+					this.subscribe = function(notification, subscriber, response, responseParams) {
+						
+						// if the list of subscribers for this notification doesn't exist, create it
+							if (!subscribers[notification]) { subscribers[notification] = {}; }
+						
+						// get list of subscribers to this notification
+							var subscriberList = subscribers[notification];
+						
+						// add subscriber to the list with function of what they do in response, with params if needed
+							subscriberList[subscriber] = {}
+							subscriberList[subscriber].response = response;
+							subscriberList[subscriber].responseParams = responseParams || null;
+						
+						// update log
+							log.push({"type": "subscribe", "notification": notification, "subscriber": subscriber});			
+					};
+		
+				/* UNSUBSCRIBE */
+					this.unsubscribe= function (notification, subscriber) {
+						
+						// if the subscription list DNE or subscriber isn't on the list, exit
+						if (!subscribers[notification] || !subscribers[notification][subscriber]) {
+							return;
+						}
+						
+						// unsubscribe
+						delete subscribers[notification][subscriber];
+						
+						// update log
+						log.push({"type": "unsubscribe", "notification": notification, "unsubscriber": subscriber});				
+					};
+		
+				/* PUBLISH */
+					this.publish = function (notification, notificationParams, publisher) {
+						
+						// if there are no subscribers, exit
+						if (!subscribers[notification]) {
+							return;
+						}
+
+						publisher = publisher || "unidentified";
+						
+						// required vars
+						var subscriberList = subscribers[notification],
+							informedSubscribers = [];
+
+						
+						for (var subscriber in subscriberList) {
+							
+							
+							var params = {};
+							params.notificationParams = notificationParams || null;
+							params.responseParams = subscribers[notification][subscriber].responseParams || null;
+							
+							// inform subscriber in a separate thread 
+							setTimeout( (function(subscriber, params) { 
+								return function() {
+									subscriberList[subscriber].response(params);
+								} 
+							})(subscriber, params), 0 );
+							
+							// keep track of who has been informed
+							informedSubscribers.push(subscriber); 
+							
+						}
+						
+						// update log 
+						log.push({"type": "publish", "notification": notification, "informedSubscribers": informedSubscribers, "publisher": publisher});
+
+						if(settings.consoleLog !== false){
+
+							console.log('Published: ' + notification + '\n Publisher: ' + publisher +  '\n Informed: ' + JSON.stringify(informedSubscribers) );
+							console.log("----------------------\n");
+						}		
+					};
+
+				/* SUBSCRIBE ONCE */
+				    this.subscribe_once = function(notification, subscriber, response, responseParams){
+
+				    	var _unsubscribe = this.unsubscribe;
+
+				        this.subscribe(
+				            notification, 
+				            subscriber,
+
+				            function(data){
+
+				                response(data);
+				                _unsubscribe(notification,subscriber);
+				            },
+
+				            responseParams
+				        );
+				    },
+
+				this.consoleLogOn = function(){ settings.consoleLog = true; };
+				this.consoleLogOff = function(){ settings.consoleLog = false; };
+			}
+
+			return new dxm(); 
+	}
 },{}],1:[function(require,module,exports){
 
 Persist=(function(){var VERSION='0.1.0',P,B,esc,init,empty,ec;ec=(function(){var EPOCH='Thu, 01-Jan-1970 00:00:01 GMT',RATIO=1000*60*60*24,KEYS=['expires','path','domain'],esc=escape,un=unescape,doc=document,me;var get_now=function(){var r=new Date();r.setTime(r.getTime());return r;}
@@ -80,130 +180,6 @@ P._init=true;};P={VERSION:VERSION,type:null,size:0,add:function(o){B[o.id]=o;C.s
 return;C.search_order.splice(ofs,1);delete B[id];init();},Cookie:ec,Store:function(name,o){if(!C.name_re.exec(name))
 throw new Error("Invalid name");if(!P.type)
 throw new Error("No suitable storage found");o=o||{};this.name=name;o.domain=o.domain||location.hostname||'localhost.localdomain';this.o=o;o.expires=o.expires||365*2;o.path=o.path||'/';this.init();}};init();return P;})();
-},{}],2:[function(require,module,exports){
-// PROJECT BLACKBOX
-(function(dxm){
-	
-	// PUBSUB INTERNALS
-	// Publishers announce when an event of note has occured
-	// Subscribers react when they get the announcement of the change
-	
-	// Pubsub System Closure
-	dxm = {};
-	dxm.notification = dxm.notification || {};
-	
-	// System Settings
-	dxm.settings = {};
-	dxm.settings.consoleLog = false;
-
-	// List of Subscribers
-	dxm.notification.subscribers = [];
-	dxm.notification.log = [];
-	
-	/* SUBSCRIBE */
-	dxm.notification.subscribe = function (notification, subscriber, response, responseParams) {
-		
-		// if the list of subscribers for this notification doesn't exist, create it
-		if (!dxm.notification.subscribers[notification]) {
-			dxm.notification.subscribers[notification] = {};
-		}
-		
-		// get list of subscribers to this notification
-		var subscriberList = dxm.notification.subscribers[notification];
-		
-		// add subscriber to the list with function of what they do in response, with params if needed
-		subscriberList[subscriber] = {}
-		subscriberList[subscriber].response = response;
-		subscriberList[subscriber].responseParams = responseParams || null;
-		
-		// update log
-		dxm.notification.log.push({"type": "subscribe", "notification": notification, "subscriber": subscriber});
-		
-		
-	}
-	
-	/* UNSUBSCRIBE */
-	dxm.notification.unsubscribe = function (notification, subscriber) {
-		
-		// if the subscription list DNE or subscriber isn't on the list, exit
-		if (!dxm.notification.subscribers[notification] || !dxm.notification.subscribers[notification][subscriber]) {
-			return;
-		}
-		
-		// unsubscribe
-		delete dxm.notification.subscribers[notification][subscriber];
-		
-		// update log
-		dxm.notification.log.push({"type": "unsubscribe", "notification": notification, "unsubscriber": subscriber});		
-		
-	}
-	
-	/* PUBLISH */
-	dxm.notification.publish = function (notification, notificationParams, publisher) {
-		
-		// if there are no subscribers, exit
-		if (!dxm.notification.subscribers[notification]) {
-			return;
-		}
-
-		publisher = publisher || "unidentified";
-		
-		// required vars
-		var subscriberList = dxm.notification.subscribers[notification],
-			informedSubscribers = [];
-
-		
-		for (var subscriber in subscriberList) {
-			
-			
-			var params = {};
-			params.notificationParams = notificationParams || null;
-			params.responseParams = dxm.notification.subscribers[notification][subscriber].responseParams || null;
-			
-			// inform subscriber in a separate thread 
-			setTimeout( (function(subscriber, params) { 
-				return function() {
-					subscriberList[subscriber].response(params);
-				} 
-			})(subscriber, params), 0 );
-			
-			// keep track of who has been informed
-			informedSubscribers.push(subscriber); 
-			
-		}
-		
-		// update log 
-		dxm.notification.log.push({"type": "publish", "notification": notification, "informedSubscribers": informedSubscribers, "publisher": publisher});
-
-		if(dxm.settings.consoleLog !== false){
-
-			console.log('\n Published: ' + notification + '\n Publisher: ' + publisher +  '\n Informed: ' + JSON.stringify(informedSubscribers) );
-			console.log("----------------------\n");
-		}		
-	}
-
-	/* SUBSCRIBE ONCE */
-    dxm.notification.subscribe_once = function(notification, subscriber, response, responseParams){
-
-        dxm.notification.subscribe(
-            notification, 
-            subscriber,
-
-            function(data){
-
-                response(data);
-                _unsubscribe(notification,subscriber);
-            },
-
-            responseParams
-        );
-    }
-
-	window.dxmPubSub = dxm.notification;
-	window.dxmPubSub.consoleLogOn = function(){ dxm.settings.consoleLog = true; };
-	window.dxmPubSub.consoleLogOff = function(){ dxm.settings.consoleLog = false; };
-	
-})();
 },{}],"fastclick":[function(require,module,exports){
 /**
  * @preserve FastClick: polyfill to remove click delays on browsers with touch UIs.
@@ -3921,4 +3897,4 @@ else {
 
 })();
 
-},{}]},{},[2,1]);
+},{}]},{},[1]);

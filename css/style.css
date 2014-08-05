@@ -192,6 +192,11 @@ section > header > .subtitle .attention {
 	color: #fff;
 }
 
+#about-page.active > header > .subtitle {
+
+	margin-left: 2.7em;
+}
+
 section.active > header .collapsed {
 
 	display: inline-block;

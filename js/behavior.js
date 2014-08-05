@@ -4,7 +4,8 @@
 	// -------- 
 
 	// required vars
-		var pubsub = dxmPubSub,
+		var _app,
+
 		product_json,
 		manufacturer_json,
 
@@ -29,7 +30,6 @@
     	search_buffer_duration = 200;
 
 	// set appcache listeners
-
 		setAppcacheListener();
 
         function setAppcacheListener(){
@@ -75,14 +75,15 @@
 		search_products_section_subheader = search_products_section.getElementsByClassName('subtitle')[0];
 		product_search_results_section = search_products_section.getElementsByClassName('content')[0]
 
-	// open about-page section
-    	addClass(about_page_section, "active");
-    	active_collapsible = about_page_section;
+	// open about-us section
+    	setTimeout(function(){
+
+	    	addClass(about_us_section, "active");
+	    	active_collapsible = about_us_section;
+    	}, 1440);
 
     // enable fastclick
-    	var FastClick = require('fastclick');
-
-    	FastClick(document.body);
+    	require('fastclick')(document.body);
 
     // activate search
     	product_search_input.addEventListener('input', function(){
@@ -490,8 +491,6 @@
 			function render_new_data(){
 
 				// required vars
-				var filter = require('array-filter');
-
 					collection_model_db_json = {};
 					product_json = requested_product_json;
 					manufacturer_json = requested_manufacturer_json;
@@ -499,17 +498,21 @@
 				
 				// filter unlistable products
 				// create manufacturer collection of products
-					product_db = filter(product_db, function(product){
+					product_db = search_array(
 
-						if(parseInt(product.WholesalePrice) > 0){
+						product_db, 
+						
+						function(product){
 
-							if( !collection_model_db_json[product.ManufacturerId] ){ collection_model_db_json[product.WholesalePrice] = []; }
+							if(parseInt(product.WholesalePrice) > 0){ return true; }
+						},
 
-							collection_model_db_json[product.WholesalePrice].push(product);
+						function(current_match){
 
-							return true;
+							if( !collection_model_db_json[current_match.ManufacturerId] ){ collection_model_db_json[current_match.WholesalePrice] = []; }
+							collection_model_db_json[current_match.WholesalePrice].push(current_match);
 						}
-					});
+					);
 
 				// store to device
 					deviceStorage.set('product', JSON.stringify(product_db));
