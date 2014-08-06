@@ -160,7 +160,7 @@
 				
 					render_product_list();
 					download_and_render_product_list();
-				}, 75);
+				}, 246);
 		}
 	}
 
