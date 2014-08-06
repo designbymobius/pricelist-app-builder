@@ -146,22 +146,21 @@
 				}
 			});
 
+			// open about-us section
+		    	addClass(about_us_section, "active");
+		    	active_collapsible = about_us_section; 
+			
 			cache_loading_complete();
 		}
 
 		function cache_loading_complete(){
 			
-				render_product_list();
 			
 				setTimeout(function(){
 				
-					// open about-us section
-				    	addClass(about_us_section, "active");
-				    	active_collapsible = about_us_section; 
-					
-					// announce and start downloading prices
-						setTimeout(download_and_render_product_list, 175);
-				}, 55);
+					render_product_list();
+					download_and_render_product_list();
+				}, 75);
 		}
 	}
 
