@@ -147,7 +147,8 @@ section.active > header > .title {
 }
 
 section > header > .subtitle .confirmation,
-section > header > .subtitle .attention {
+section > header > .subtitle .attention,
+section > header > .subtitle .progress {
 
 	padding: .25em .5em;
 	color: #fff;
@@ -163,6 +164,10 @@ section > header > .subtitle .attention {
 	background-color: orange;
 }
 
+section > header > .subtitle .progress {
+
+	background-color: navy;
+}
 
 #about-us {
 

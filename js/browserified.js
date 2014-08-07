@@ -7,30 +7,18 @@ require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof requ
 		// PUBSUB INTERNALS
 		// Publishers announce when an event of note has occured
 		// Subscribers react when they get the announcement of the change
-		
-		// Pubsub System Closure
-			var dxm = function(){
 
-			// required vars
-				var settings, subscribers, log; 
-
-			// set default values
-				settings = {
-
-					consoleLog: false
-				};
-
-				subscribers = [];
-				log = [];
+		// Prototype
+			var codec = {
 		
 				/* SUBSCRIBE */
-					this.subscribe = function(notification, subscriber, response, responseParams) {
+					subscribe: function(notification, subscriber, response, responseParams){
 						
 						// if the list of subscribers for this notification doesn't exist, create it
-							if (!subscribers[notification]) { subscribers[notification] = {}; }
+							if (!this.subscribers[notification]) { this.subscribers[notification] = {}; }
 						
 						// get list of subscribers to this notification
-							var subscriberList = subscribers[notification];
+							var subscriberList = this.subscribers[notification];
 						
 						// add subscriber to the list with function of what they do in response, with params if needed
 							subscriberList[subscriber] = {}
@@ -38,36 +26,38 @@ require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof requ
 							subscriberList[subscriber].responseParams = responseParams || null;
 						
 						// update log
-							log.push({"type": "subscribe", "notification": notification, "subscriber": subscriber});			
-					};
+							this.log.push({"type": "subscribe", "notification": notification, "subscriber": subscriber});			
+					},
 		
 				/* UNSUBSCRIBE */
-					this.unsubscribe= function (notification, subscriber) {
+					unsubscribe: function (notification, subscriber) {
 						
 						// if the subscription list DNE or subscriber isn't on the list, exit
-						if (!subscribers[notification] || !subscribers[notification][subscriber]) {
+						if (!this.subscribers[notification] || !this.subscribers[notification][subscriber]) {
 							return;
 						}
 						
 						// unsubscribe
-						delete subscribers[notification][subscriber];
+						delete this.subscribers[notification][subscriber];
 						
 						// update log
-						log.push({"type": "unsubscribe", "notification": notification, "unsubscriber": subscriber});				
-					};
+						this.log.push({"type": "unsubscribe", "notification": notification, "unsubscriber": subscriber});				
+					},
 		
 				/* PUBLISH */
-					this.publish = function (notification, notificationParams, publisher) {
+					publish: function (notification, notificationParams, publisher) {
+
+						var _self = this;
 						
 						// if there are no subscribers, exit
-						if (!subscribers[notification]) {
+						if (!_self.subscribers[notification]) {
 							return;
 						}
 
 						publisher = publisher || "unidentified";
 						
 						// required vars
-						var subscriberList = subscribers[notification],
+						var subscriberList = _self.subscribers[notification],
 							informedSubscribers = [];
 
 						
@@ -76,7 +66,7 @@ require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof requ
 							
 							var params = {};
 							params.notificationParams = notificationParams || null;
-							params.responseParams = subscribers[notification][subscriber].responseParams || null;
+							params.responseParams = _self.subscribers[notification][subscriber].responseParams || null;
 							
 							// inform subscriber in a separate thread 
 							setTimeout( (function(subscriber, params) { 
@@ -86,45 +76,54 @@ require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof requ
 							})(subscriber, params), 0 );
 							
 							// keep track of who has been informed
-							informedSubscribers.push(subscriber); 
-							
+							informedSubscribers.push(subscriber);							
 						}
 						
 						// update log 
-						log.push({"type": "publish", "notification": notification, "informedSubscribers": informedSubscribers, "publisher": publisher});
+						_self.log.push({"type": "publish", "notification": notification, "informedSubscribers": informedSubscribers, "publisher": publisher});
 
-						if(settings.consoleLog !== false){
+						if(_self.settings.consoleLog !== false){
 
 							console.log('Published: ' + notification + '\n Publisher: ' + publisher +  '\n Informed: ' + JSON.stringify(informedSubscribers) );
 							console.log("----------------------\n");
 						}		
-					};
+					},
 
 				/* SUBSCRIBE ONCE */
-				    this.subscribe_once = function(notification, subscriber, response, responseParams){
+				    subscribe_once: function(notification, subscriber, response, responseParams){
 
-				    	var _unsubscribe = this.unsubscribe;
+				    	var _self = this;				            	
+				        
 
-				        this.subscribe(
+				        _self.subscribe(
 				            notification, 
 				            subscriber,
 
 				            function(data){
 
-				                response(data);
-				                _unsubscribe(notification,subscriber);
-				            },
+			                	response(data);
+			                	_self.unsubscribe(notification,subscriber);
+			            	},
 
 				            responseParams
 				        );
-				    },
+				    }
+			}
+		
+		// Constructor
+			function ReconUnit(settings){
 
-				this.consoleLogOn = function(){ settings.consoleLog = true; };
-				this.consoleLogOff = function(){ settings.consoleLog = false; };
+				// set default values
+					this.settings = settings || { consoleLog: false };
+					this.subscribers = [];
+					this.log = [];
 			}
 
-			return new dxm(); 
-	}
+			ReconUnit.prototype = codec;
+			ReconUnit.prototype.constructor = ReconUnit;
+
+			return ReconUnit; 
+	}();
 },{}],1:[function(require,module,exports){
 
 Persist=(function(){var VERSION='0.1.0',P,B,esc,init,empty,ec;ec=(function(){var EPOCH='Thu, 01-Jan-1970 00:00:01 GMT',RATIO=1000*60*60*24,KEYS=['expires','path','domain'],esc=escape,un=unescape,doc=document,me;var get_now=function(){var r=new Date();r.setTime(r.getTime());return r;}

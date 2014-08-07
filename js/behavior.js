@@ -30,8 +30,8 @@
     	search_buffer_duration = 200;
 
     // set + configure app messaging system
-    	_app = require('./cjs-pubsub.js')();
-    	_app.consoleLogOn();
+    	var ReconUnit = require('./cjs-pubsub.js');
+    	_app = new ReconUnit({ consoleLog: true });
 
     // set default event responses
     	_app.subscribe_once('app-setup-complete', 'window-onload', function(){
@@ -40,9 +40,7 @@
     	});
 
 
-
     window.addEventListener('load', setup_app);
-
 
 
     function setAppcacheListener(){
@@ -134,33 +132,41 @@
 					manufacturer_json = cached_manufacturer_json;
 					manufacturer_db = cached_manufacturer_db;
 
-					about_page_section_subheader.innerHTML = (cache_age ? "<span class='attention'><span class='collapsed'>" + cache_save_time + "</span><span class='expanded'>" + cache_age + "</span></span>" : "Prices From last download" );
+					open_about_us_menu();
 
+					setTimeout(function(){
+						
+						about_page_section_subheader.innerHTML = (cache_age ? "<span class='attention'><span class='collapsed'>" + cache_save_time + "</span><span class='expanded'>" + cache_age + "</span></span>" : "Prices From last download" );
+						render_product_list();
+					}, 155);
 
 					ga('send','event','offline-db', 'loaded');
 				}
 
 				else {
 					
-					about_page_section_subheader.innerHTML = "Downloading prices";				
+					open_about_us_menu();
+
+					setTimeout(function(){
+
+						about_page_section_subheader.innerHTML = "<span class='progress'>Downloading price</span>";				
+					}, 155);
 				}
 			});
-
-			// open about-us section
-		    	addClass(about_us_section, "active");
-		    	active_collapsible = about_us_section; 
 			
 			cache_loading_complete();
 		}
 
 		function cache_loading_complete(){
 			
-			
-				setTimeout(function(){
-				
-					render_product_list();
-					download_and_render_product_list();
-				}, 246);
+			download_and_render_product_list();
+		}
+
+		function open_about_us_menu(){
+
+			// open about-us section
+		    	addClass(about_us_section, "active");
+		    	active_collapsible = about_us_section; 
 		}
 	}
 
@@ -240,7 +246,7 @@
 			
 			// filter unlistable products
 			// create manufacturer collection of products
-				product_db = search_array(
+				product_db = array_search(
 
 					product_db, 
 					
@@ -384,7 +390,7 @@
 
 			    			// search manufacturers
 			    				manufacturer_db = ( is_array(manufacturer_db) ? manufacturer_db : JSON.parse(manufacturer_json));
-				    			manufacturer_name_search_results = search_array(
+				    			manufacturer_name_search_results = array_search(
 				    				
 				    				manufacturer_db,
 				    				function(manufacturer){
@@ -406,7 +412,7 @@
 			    			// search products
 			    				var manufacturer_id_model = key_model_db_json(manufacturer_db, "Id");
 			    				product_db = ( is_array(product_db) ? product_db : JSON.parse(product_json));
-				    			product_name_search_results = search_array(
+				    			product_name_search_results = array_search(
 				    				
 				    				product_db,
 				    				function(product){
@@ -696,7 +702,7 @@
 		}
 
 	// search array
-		function search_array(array_to_search, search_function, on_match){
+		function array_search(array_to_search, search_function, on_match){
 
 			var search_matches = [];
 
