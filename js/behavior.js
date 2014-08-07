@@ -31,7 +31,7 @@
 
     // set + configure app messaging system
     	var ReconUnit = require('./cjs-pubsub.js');
-    	_app = new ReconUnit({ consoleLog: true });
+    	_app = new ReconUnit();
 
     // set default event responses
     	_app.subscribe_once('app-setup-complete', 'window-onload', function(){
@@ -274,7 +274,11 @@
 
 			// do rendering
 				render_product_list();
-				about_page_section_subheader.innerHTML = "<span class='collapsed confirmation'>" + require('moment')(download_timestamp).calendar() + "</span><span class='expanded confirmation'>current prices</span>";
+
+				setTimeout(function(){
+
+					about_page_section_subheader.innerHTML = "<span class='collapsed confirmation'>" + require('moment')(download_timestamp).calendar() + "</span><span class='expanded confirmation'>current prices</span>";
+				}, 155);
 		}
 	
 		function all_metadata_loaded(){

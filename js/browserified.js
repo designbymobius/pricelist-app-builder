@@ -84,8 +84,7 @@ require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof requ
 
 						if(_self.settings.consoleLog !== false){
 
-							console.log('Published: ' + notification + '\n Publisher: ' + publisher +  '\n Informed: ' + JSON.stringify(informedSubscribers) );
-							console.log("----------------------\n");
+							console.log('-> Published: ' + notification + '\n-> Publisher: ' + publisher +  '\n<- Informed: ' + JSON.stringify(informedSubscribers) + "\n" );
 						}		
 					},
 
