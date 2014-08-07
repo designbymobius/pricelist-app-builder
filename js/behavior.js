@@ -313,7 +313,7 @@
 		function setup_app(){
 
 			// hide address bar - mobile browsers
-				if(typeof scrollY !== 'undefined' && !scrollY) scroll(0,0);
+				if(typeof scrollY !== 'undefined' && !scrollY) scroll(0,1);
 
     		createDeviceStorage();
 			setAppcacheListener();
