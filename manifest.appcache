@@ -14,9 +14,8 @@ font/icomoon.ttf
 font/icomoon.svg
 
 NETWORK:
-*
-http://*
-https://*
+http://www.google-analytics.com
+http://fathomless-atoll-7008.herokuapp.com
 
 FALLBACK:
 / index.html
