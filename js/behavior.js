@@ -126,7 +126,6 @@
 
 					product_json = cached_product_json;
 					product_db = cached_product_db;
-					products_grouped_by_manufacturer = collection_model_db_json(product_db, 'ManufacturerId');
 
 					manufacturer_json = cached_manufacturer_json;
 					manufacturer_db = cached_manufacturer_db;
@@ -217,7 +216,7 @@
 			// required vars
 				download_timestamp = Date.now();
 
-				collection_model_db_json = {};
+				products_grouped_by_manufacturer = {};
 				
 				product_json = requested_product_json;
 				product_db = JSON.parse(product_json);
@@ -239,8 +238,8 @@
 
 					function(current_match){
 
-						if( !collection_model_db_json[current_match.ManufacturerId] ){ collection_model_db_json[current_match.WholesalePrice] = []; }
-						collection_model_db_json[current_match.WholesalePrice].push(current_match);
+						if( !products_grouped_by_manufacturer[current_match.ManufacturerId] ){ products_grouped_by_manufacturer[current_match.WholesalePrice] = []; }
+						products_grouped_by_manufacturer[current_match.WholesalePrice].push(current_match);
 					}
 				);
 
@@ -598,6 +597,9 @@
 			// alpha sort manufacturers
 				array_sort = require('stable');
 				manufacturer_db = array_sort(manufacturer_db, arrayAlphaSort);
+				
+			// group products by manufacturer
+				products_grouped_by_manufacturer = collection_model_db_json(product_db, 'ManufacturerId');
 
 			// iterate over manufacturer list
 				for(var i = manufacturer_db.length; i >= 1; i -= 1 ){
