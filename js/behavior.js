@@ -29,11 +29,10 @@
     // set initial search buffer duration
     	search_buffer_duration = 200;
 
-    // set + configure app messaging system
-    	var LogicUnit = require('./cjs-pubsub.js');
-    	_app = new LogicUnit({ consoleLog: false });
+    // set + configure app behavior
+    	var Observer = require('./cjs-pubsub.js');
+    	_app = new Observer({ consoleLog: false });
 
-    // set default event responses
     	_app.subscribe_once('app-setup-complete', 'window-onload', function(){
 
     		render_cached_product_list();
@@ -132,25 +131,30 @@
 					manufacturer_json = cached_manufacturer_json;
 					manufacturer_db = cached_manufacturer_db;
 
-					open_about_us_menu();
-
 					setTimeout(function(){
-						
-						about_page_section_subheader.innerHTML = (cache_age ? "<span class='attention'><span class='collapsed'>" + cache_save_time + "</span><span class='expanded'>" + cache_age + "</span></span>" : "Prices From last download" );
-						render_product_list();
-					}, 155);
 
-					ga('send','event','offline-db', 'loaded');
+						open_about_us_menu();
+
+						setTimeout(function(){
+							
+							about_page_section_subheader.innerHTML = (cache_age ? "<span class='attention'><span class='collapsed'>" + cache_save_time + "</span><span class='expanded'>" + cache_age + "</span></span>" : "Prices From last download" );
+							render_product_list();
+							ga('send','event','offline-db', 'loaded');
+						}, 175);
+					}, 175);
 				}
 
 				else {
 					
-					open_about_us_menu();
-
 					setTimeout(function(){
 
-						about_page_section_subheader.innerHTML = "<span class='progress'>Downloading price</span>";				
-					}, 155);
+						open_about_us_menu();
+
+						setTimeout(function(){
+
+							about_page_section_subheader.innerHTML = "<span class='progress'>Downloading price</span>";				
+						}, 175);
+					}, 175);
 				}
 			});
 			
