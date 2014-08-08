@@ -30,8 +30,8 @@
     	search_buffer_duration = 200;
 
     // set + configure app messaging system
-    	var ReconUnit = require('./cjs-pubsub.js');
-    	_app = new ReconUnit();
+    	var LogicUnit = require('./cjs-pubsub.js');
+    	_app = new LogicUnit({ consoleLog: false });
 
     // set default event responses
     	_app.subscribe_once('app-setup-complete', 'window-onload', function(){
@@ -40,7 +40,7 @@
     	});
 
 
-    window.addEventListener('load', setup_app);
+    window.addEventListener('DOMContentLoaded', setup_app);
 
 
     function setAppcacheListener(){
@@ -177,72 +177,50 @@
 			requested_manufacturer_json,
 			download_timestamp,
 
-			remaining_request_fails = 2;
+			pending_requests = 2;
 
 		// get product json from server
 			HTTP_POST(
 				'http://pricingapp.designbymobi.us/get-product.php',
 				null,
-				function(data){
+				function(response){
 
-					if(!is_json(data)){
+					ajax_success(response, function(response){
 
-						remaining_request_fails -= 1;
-					} 
-
-					// bind received json to instance product json
-					else{
-
-						requested_product_json = data;
-					}
-
-					if(all_metadata_loaded()){
-
-						render_new_data();
-					}
+						requested_product_json = response;
+					});
 				},
-				function(){
 
-					remaining_request_fails -= 1;
-				}
+				ajax_fail
 			);
 
 		// get manufacturer json from server
 			HTTP_POST(
 				'http://pricingapp.designbymobi.us/get-manufacturer.php',
 				null,
-				function(data){
+				function(response){
 
-					if( !is_json(data) ){
+					ajax_success(response, function(response){
 
-					 	remaining_request_fails -= 1;
-					}
-
-					// store received json to instance product json 
-					else {
-						
-						requested_manufacturer_json = data;
-					}
-
-
-					if(all_metadata_loaded()){
-
-						render_new_data();
-					}
+						requested_manufacturer_json = response;
+					});
 				},
-				function(){
-
-					remaining_request_fails -= 1;
-				}
+				ajax_fail
 			);
 
 		function render_new_data(){
 
 			// required vars
-				collection_model_db_json = {};
-				product_json = requested_product_json;
-				manufacturer_json = requested_manufacturer_json;
 				download_timestamp = Date.now();
+
+				collection_model_db_json = {};
+				
+				product_json = requested_product_json;
+				product_db = JSON.parse(product_json);
+
+				manufacturer_json = requested_manufacturer_json;
+				manufacturer_db = JSON.parse(manufacturer_json);
+
 			
 			// filter unlistable products
 			// create manufacturer collection of products
@@ -269,9 +247,6 @@
 
 				ga('send','event','offline-db','db-updated');
 
-			// alphabetically sort
-				manufacturer_db = JSON.parse(manufacturer_json);
-
 			// do rendering
 				render_product_list();
 
@@ -296,12 +271,21 @@
 
 		function ajax_fail(){
 
-			remaining_request_fails -= 1;
+			pending_requests -= 1;
 
-			if(remaining_request_fails < 1){
+			if(pending_requests < 1){
 
 				ga('send','event','ajax','server-not-reached');
 			}
+		}
+
+		function ajax_success(response, process_response){
+
+			pending_requests -= 1;
+
+			if( is_json(response) && typeof process_response === "function"){ process_response(response); }
+
+			if( all_metadata_loaded() ){ render_new_data(); }
 		}
 	}
 
