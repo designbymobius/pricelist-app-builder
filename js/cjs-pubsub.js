@@ -83,7 +83,7 @@
 
 						if(_self.settings.consoleLog !== false){
 
-							console.log('-> Published: ' + notification + '\n-> Publisher: ' + publisher +  '\n<- Informed: ' + JSON.stringify(informedSubscribers) + "\n" );
+							console.log('<- Publisher: ' + publisher +  '\n<- Published: ' + notification + '\n-> Informed: ' + JSON.stringify(informedSubscribers) + "\n" );
 						}		
 					},
 
