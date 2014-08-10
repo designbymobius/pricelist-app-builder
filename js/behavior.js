@@ -26,25 +26,65 @@
     	search_buffer, 
     	search_buffer_duration;
 
-    // set initial search buffer duration
-    	search_buffer_duration = 200;
+	// REQ MODULE: INIT
 
-    // set + configure app behavior
-    	var Observer;
+		// id: app-init
 
-    	Observer = require('./js/cjs-pubsub.js');
-    	_app = new Observer({ consoleLog: false });
+		//	REQ CHANNELS
+		//	* dom-is-ready
+		//	* app-setup-complete
 
-    	_app.subscribe_once('app-setup-complete', 'window-onload', function(){
+		init();
 
-    		render_cached_product_list();
-    	});
+		function init(){	
 
+			var module_id = 'app-init';		
 
-    window.addEventListener('DOMContentLoaded', setup_app);
+		    // set initial search buffer duration
+		    	search_buffer_duration = 200;
 
+		    // glue modules and events together
+				setModuleGlue();
 
-	// SETUP GOOGLE ANALYTICS
+			// 	dom-is-ready => setup-app
+				_app.subscribe_once('dom-is-ready', module_id, setup_app);
+				
+			// app-setup-complete => render_cached_product_list
+				_app.subscribe_once('app-setup-complete', module_id, render_cached_product_list);
+			
+			// watch for dom-is-ready
+				setDOMReadyListener();
+		}
+
+    // MODULE: MODULE GLUE
+    	function setModuleGlue(){
+    		
+	    	var Observer;
+
+	    	Observer = require('./js/cjs-pubsub.js');
+	    	_app = new Observer({ consoleLog: false });
+    	}
+
+    // MODULE: DOM READY
+
+    	// id: dom-ready
+
+		// OUTPUT CHANNELS
+		//	* dom-is-ready
+
+    	function setDOMReadyListener(){
+
+    		// req vars
+	    		var module_id = 'dom-ready';
+
+    		// on dom ready, tell the modules
+	    		window.addEventListener('DOMContentLoaded', function(){
+
+	    			_app.publish('dom-is-ready', module_id);
+	    		});
+    	}
+
+	// MODULE: GOOGLE ANALYTICS
 
 		// id: google-analytics 
 
@@ -57,38 +97,41 @@
 
 	    function setupGoogleAnalytics(){
 
+	    	// set module id
+	    		var module_id = 'google-analytics';
+
 	    	// can work offline
-		    	_app.subscribe_once('device-has-appcache', 'google-analytics', function(){
+		    	_app.subscribe_once('device-has-appcache', module_id, function(){
 
 		            ga('send','event','device-has-appcache');
 		    	});
 
 		    // offline databases updated
-		    	_app.subscribe_once('offline-databases-updated', 'google-analytics', function(){
+		    	_app.subscribe_once('offline-databases-updated', module_id, function(){
 
 					ga('send','event','offline-databases-updated');
 		    	});
 
 		    // server not reached
-		    	_app.subscribe('server-not-reached', 'google-analytics', function(){
+		    	_app.subscribe('server-not-reached', module_id, function(){
 		    		
 					ga('send','event','server-not-reached');
 		    	})
 
 		    // slow search render (longer than 16fps == less than 60fps)
-		    	_app.subscribe('slow-search-render', 'google-analytics', function(){
+		    	_app.subscribe('slow-search-render', module_id, function(){
 
-		    		ga('send','event','search','slow-search');
+		    		ga('send','event','slow-search-render');
 		    	});
 
 		    // section view switched
-		    	_app.subscribe('section-view-switched', 'google-analytics', function(data){
+		    	_app.subscribe('section-view-switched', module_id, function(data){
 
 			        ga('send','event', data.notificationParams + "-active");
 		    	});
 	    }
 
-	// SETUP APPCACHE
+	// MODULE: APPCACHE
 
 		// OUTPUT CHANNELS
 		//	* device-has-appcache
@@ -111,14 +154,15 @@
 	            }
 	    }
 
-    function createDeviceStorage(){
+	// MODULE: LOCAL DATABASE
+	    function createDeviceStorage(){
 
-        deviceStorage = new Persist.Store('Pricing App Storage', {
+	        deviceStorage = new Persist.Store('Pricing App Storage', {
 
-            about: "Data Storage to enhance Offline usage",
-            path: location.href
-        });
-    }
+	            about: "Data Storage to enhance Offline usage",
+	            path: location.href
+	        });
+	    }
 
 	function render_cached_product_list(){
 
@@ -356,9 +400,7 @@
 	// setup app
 		function setup_app(){
 
-			// setup google analytics
-				setupGoogleAnalytics();
-
+			setupGoogleAnalytics();
     		createDeviceStorage();
 			setAppcacheListener();
 
