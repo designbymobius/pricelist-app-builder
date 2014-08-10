@@ -118,7 +118,7 @@
 					ga('send','event','server-not-reached');
 		    	})
 
-		    // slow search render (longer than 16fps == less than 60fps)
+		    // slow search render (longer than 16ms == less than 60fps)
 		    	_app.subscribe('slow-search-render', module_id, function(){
 
 		    		ga('send','event','slow-search-render');
