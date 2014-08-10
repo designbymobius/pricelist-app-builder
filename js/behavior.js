@@ -44,25 +44,25 @@
 		    	search_buffer_duration = 200;
 
 		    // glue modules and events together
-				setModuleGlue();
+				setupModuleGlue();
 
 			// 	dom-is-ready => setup-app
 				_app.subscribe_once('dom-is-ready', module_id, setup_app);
 				
-			// app-setup-complete => render_cached_product_list
+			// app-setup-complete => render-cached-product-list
 				_app.subscribe_once('app-setup-complete', module_id, render_cached_product_list);
 			
 			// watch for dom-is-ready
-				setDOMReadyListener();
+				setupDOMReady();
 		}
 
     // MODULE: MODULE GLUE
-    	function setModuleGlue(){
+    	function setupModuleGlue(){
     		
 	    	var Observer;
 
 	    	Observer = require('./js/cjs-pubsub.js');
-	    	_app = new Observer({ consoleLog: false });
+	    	_app = new Observer({ consoleLog: true });
     	}
 
     // MODULE: DOM READY
@@ -72,7 +72,7 @@
 		// OUTPUT CHANNELS
 		//	* dom-is-ready
 
-    	function setDOMReadyListener(){
+    	function setupDOMReady(){
 
     		// req vars
 	    		var module_id = 'dom-ready';
@@ -136,7 +136,7 @@
 		// OUTPUT CHANNELS
 		//	* device-has-appcache
 	    
-	    function setAppcacheListener(){
+	    function setupAppcache(){
 
 	        if (window.applicationCache){
 
@@ -155,7 +155,7 @@
 	    }
 
 	// MODULE: LOCAL DATABASE
-	    function createDeviceStorage(){
+	    function setupDeviceStorage(){
 
 	        deviceStorage = new Persist.Store('Pricing App Storage', {
 
@@ -163,6 +163,303 @@
 	            path: location.href
 	        });
 	    }
+
+	// MODULE: DOM QUERY CACHE
+
+		function setupDOMQueryCache(){
+
+			viewport = document.getElementById('viewport');
+			collapsible_sections = viewport.getElementsByClassName('collapsible');
+
+			about_us_section = document.getElementById('about-us');
+			about_page_section = document.getElementById('about-page');
+			about_page_section_subheader = about_page_section.getElementsByClassName('subtitle')[0];
+
+			search_products_section = document.getElementById('search-products');
+			product_search_input = document.getElementById('product-search-input');
+			search_products_section_subheader = search_products_section.getElementsByClassName('subtitle')[0];
+			product_search_results_section = search_products_section.getElementsByClassName('content')[0];			
+		}
+
+	// MODULE: REMOVE TOUCH DELAY
+
+		function setupRemoveTouchDelay(){			
+
+		    require('fastclick')(document.body);
+		}
+
+	// MODULE: SEARCH
+
+		// id: search-products
+
+		// OUTPUT CHANNELS
+		// * product-database-searched
+
+		function setupSearchProducts(){
+
+		    // activate search
+		    	product_search_input.addEventListener('input', function(){
+
+		    		var value_to_search,
+		    			previous_value,
+		    			previous_matches;
+
+		    		return function(e){
+
+		    			var current_value = e.target.value,
+		    				search_start_time,
+		    				search_duration,
+		    				product_name_search_results,
+		    				manufacturer_name_search_results,
+		    				matched_manufacturer_id_array = [];
+
+		    			if(typeof search_buffer != 'undefined'){ 
+		    				clearTimeout(search_buffer); 
+		    				search_buffer_duration = 305; 
+		    			}
+
+		    			search_buffer = setTimeout(do_search, search_buffer_duration);
+
+		    			value_to_search = current_value.toLowerCase();
+
+		    			function do_search(){
+
+		    				// required vars
+		    					var markup_to_render = "",
+		    						array_sort;
+
+		    				// don't search if ...
+				    			if( typeof product_json == 'undefined' || // no product data
+				    				typeof manufacturer_json == 'undefined' || // no manufacturer data
+				    				current_value === previous_value // search value matches last search
+				    			){ 
+
+				    				console.log("didn't bother searching .. ");
+				    				return;
+				    			}
+
+				    		// wipe results if search field is blank
+				    			if(value_to_search === ""){
+
+				    				previous_value = "";
+				    				previous_matches = "";
+
+				    				product_search_results_section.innerHTML = "";
+				    				search_products_section_subheader.innerHTML = "";
+
+									removeClass(product_search_results_section, "unique-match");
+									removeClass(product_search_results_section, "swap-row-color");
+
+				    				return;
+				    			}
+
+			    			search_start_time = Date.now();
+
+			    			// search manufacturers
+			    				manufacturer_db = ( is_array(manufacturer_db) ? manufacturer_db : JSON.parse(manufacturer_json));
+				    			manufacturer_name_search_results = array_search(
+				    				
+				    				manufacturer_db,
+				    				function(manufacturer){
+
+				    					// not a match if search value can't be found in manufacturer's name
+				    					if(!manufacturer.Name || manufacturer.Name.toLowerCase().indexOf( value_to_search ) < 0 ){
+
+				    						return false;
+				    					}
+
+				    					return true;
+				    				}, 
+				    				function(matched_manufacturer){
+
+				    					matched_manufacturer_id_array.push( matched_manufacturer.Id );
+				    				}
+				    			);
+
+			    			// search products
+			    				var manufacturer_id_model = key_model_db_json(manufacturer_db, "Id");
+			    				product_db = ( is_array(product_db) ? product_db : JSON.parse(product_json));
+				    			product_name_search_results = array_search(
+				    				
+				    				product_db,
+				    				function(product){
+
+				    					var wholesale_price,
+				    						manufacturer_id,
+				    						normalized_name;
+
+				    					wholesale_price = product.WholesalePrice;
+				    					manufacturer_id = product.ManufacturerId;
+				    					normalized_name = product.Name.toLowerCase();
+
+				    					// not a match if ...
+					    					if( (wholesale_price === "" || wholesale_price === null) || // no wholesale price or ... 
+					    						( 
+					    							normalized_name.indexOf( value_to_search ) < 0 && // search value not in name and ... 
+					    							matched_manufacturer_id_array.indexOf( manufacturer_id ) < 0 // manufacturer id isn't in array of matches
+					    						)  
+					    					){
+
+					    						return false;
+					    					}
+
+				    					return true;
+				    				},
+				    				function(matched_product){
+
+			    					   matched_product.markup = "<li>" +
+					    										  "<span class='name'>" + manufacturer_id_model[matched_product.ManufacturerId].Name + " " +  matched_product.Name + "</span>" + 
+					    										  "<span class='price'>&#8358;" + matched_product.WholesalePrice + "</span>" +
+					    										"</li>";
+			    					}
+				    			);
+
+			    			// sort results
+			    				var manufacturer_id_model = key_model_db_json(manufacturer_db, 'Id');
+			    				
+			    				array_sort = require('stable');
+
+			    				product_name_search_results = array_sort(product_name_search_results, function(a,b){
+
+			    					var name_of_a,
+			    						name_of_b,
+			    						manufacturer_of_a,
+										manufacturer_of_b;
+
+										manufacturer_of_a = manufacturer_id_model[ a.ManufacturerId ].Name.toLowerCase(); 
+										manufacturer_of_b = manufacturer_id_model[ b.ManufacturerId ].Name.toLowerCase(); 
+
+										if (manufacturer_of_a === manufacturer_of_b){ 
+
+											name_of_a = a.Name.toLowerCase();
+											name_of_b = b.Name.toLowerCase();
+
+											if(name_of_a > name_of_b){
+
+												return 1;
+											}
+
+											else if (name_of_a < name_of_b){
+
+												return -1;
+											}
+
+											else {
+
+												return 0;
+											}
+										} 
+
+										else if (manufacturer_of_a < manufacturer_of_b){
+
+											return -1;
+										}
+
+										else {
+
+											return 1;
+										}
+			    				});
+
+			    			// add each match to markup
+			    				array_each(product_name_search_results, function(this_product){
+
+			    					markup_to_render += this_product.markup;
+			    				});
+
+			    			// render results
+			    				setTimeout(function(){
+
+			    					var cached_previous_matches = previous_matches,
+			    						cached_current_matches = product_name_search_results;
+
+			    					return function(){
+
+										// results changed 
+											if( is_array(cached_previous_matches) && !array_is_equal(cached_current_matches, cached_previous_matches) ){
+
+												toggleClass(product_search_results_section, "swap-row-color");
+											}
+
+										// unique result
+											if(cached_current_matches.length === 1){
+
+												addClass(product_search_results_section, "unique-match");
+											}
+
+											else {
+
+												removeClass(product_search_results_section, "unique-match");
+											}
+
+										// render
+						    				product_search_results_section.innerHTML = markup_to_render;
+						    				search_products_section_subheader.innerHTML =  product_name_search_results.length + " match" + (product_name_search_results.length > 1 ? "es" : "") + "<span class='expanded'> for \"" + value_to_search + "\"</span>";						
+											    						
+										// logging
+											var search_total_duration = Date.now() - search_start_time;								
+				    						
+				    						_app.publish('product-database-searched');
+				    						if(search_total_duration > 16){ _app.publish('slow-search-render'); }
+			    					}
+			    				}(), 0);
+
+			    			// reset search internals
+				    			previous_value = value_to_search;
+				    			previous_matches = product_name_search_results;
+				    			delete search_buffer;
+				    			search_buffer_duration = 200;
+		    			}
+		    		}
+		    	}());
+		}
+
+	// MODULE: MAIN MENU
+
+		// id: main-menu
+
+		// OUTPUT CHANNELS
+		// * section-view-switched
+
+		function setupMainMenu(){
+
+			viewport.addEventListener("click", function(e){
+
+				// required vars
+					var click_target = e.target,
+						array_of_focal_elements;
+
+				// filter clicks that arent from the collapsible menu
+				// filter clicks from active menu
+	                while( !hasClass(click_target, "collapsible") && click_target != viewport ){
+
+	                    if( click_target.parentNode == screen || click_target.parentNode == document.body ){ return; }
+	                    click_target = click_target.parentNode;
+	                }
+
+	            	if(click_target === viewport || click_target === active_collapsible){ return; }
+
+	            // deactivate active menu
+	            	if(typeof active_collapsible != "undefined" || active_collapsible != null){
+
+	            		removeClass(active_collapsible, "active");
+	            	}
+
+	            // activate clicked menu
+	            	addClass(click_target, "active");
+	            	active_collapsible = click_target;
+
+	            // set focus on focal element
+	            	array_of_focal_elements = click_target.getElementsByClassName('focal-element');
+	            	if(array_of_focal_elements.length > 0){
+
+	            		array_of_focal_elements[0].focus();
+	            	}
+
+	            _app.publish('section-view-switched', click_target.id);
+			});
+		}
+		
 
 	function render_cached_product_list(){
 
@@ -401,276 +698,17 @@
 		function setup_app(){
 
 			setupGoogleAnalytics();
-    		createDeviceStorage();
-			setAppcacheListener();
+    		
+    		setupDeviceStorage();
+			setupAppcache();
 
-			// cache dom queries
-				viewport = document.getElementById('viewport');
-				collapsible_sections = viewport.getElementsByClassName('collapsible');
+			setupDOMQueryCache();
 
-				about_us_section = document.getElementById('about-us');
-				about_page_section = document.getElementById('about-page');
-				about_page_section_subheader = about_page_section.getElementsByClassName('subtitle')[0];
+		    setupRemoveTouchDelay();
 
-				search_products_section = document.getElementById('search-products');
-				product_search_input = document.getElementById('product-search-input');
-				search_products_section_subheader = search_products_section.getElementsByClassName('subtitle')[0];
-				product_search_results_section = search_products_section.getElementsByClassName('content')[0]
+		    setupSearchProducts();
 
-		    // remove click delay on touch interfaces
-		    	require('fastclick')(document.body);
-
-		    // activate search
-		    	product_search_input.addEventListener('input', function(){
-
-		    		var value_to_search,
-		    			previous_value,
-		    			previous_matches;
-
-		    		return function(e){
-
-		    			var current_value = e.target.value,
-		    				search_start_time,
-		    				search_duration,
-		    				product_name_search_results,
-		    				manufacturer_name_search_results,
-		    				matched_manufacturer_id_array = [];
-
-		    			if(typeof search_buffer != 'undefined'){ 
-		    				clearTimeout(search_buffer); 
-		    				search_buffer_duration = 305; 
-		    			}
-
-		    			search_buffer = setTimeout(do_search, search_buffer_duration);
-
-		    			value_to_search = current_value.toLowerCase();
-
-		    			function do_search(){
-
-		    				// required vars
-		    					var markup_to_render = "",
-		    						array_sort;
-
-		    				// don't search if ...
-				    			if( typeof product_json == 'undefined' || // no product data
-				    				typeof manufacturer_json == 'undefined' || // no manufacturer data
-				    				current_value === previous_value // search value matches last search
-				    			){ 
-
-				    				console.log("didn't bother searching .. ");
-				    				return;
-				    			}
-
-				    		// wipe results if search field is blank
-				    			if(value_to_search === ""){
-
-				    				previous_value = "";
-				    				previous_matches = "";
-
-				    				product_search_results_section.innerHTML = "";
-				    				search_products_section_subheader.innerHTML = "";
-
-									removeClass(product_search_results_section, "unique-match");
-									removeClass(product_search_results_section, "swap-row-color");
-
-				    				return;
-				    			}
-
-			    			search_start_time = Date.now();
-
-			    			// search manufacturers
-			    				manufacturer_db = ( is_array(manufacturer_db) ? manufacturer_db : JSON.parse(manufacturer_json));
-				    			manufacturer_name_search_results = array_search(
-				    				
-				    				manufacturer_db,
-				    				function(manufacturer){
-
-				    					// not a match if search value can't be found in manufacturer's name
-				    					if(!manufacturer.Name || manufacturer.Name.toLowerCase().indexOf( value_to_search ) < 0 ){
-
-				    						return false;
-				    					}
-
-				    					return true;
-				    				}, 
-				    				function(matched_manufacturer){
-
-				    					matched_manufacturer_id_array.push( matched_manufacturer.Id );
-				    				}
-				    			);
-
-			    			// search products
-			    				var manufacturer_id_model = key_model_db_json(manufacturer_db, "Id");
-			    				product_db = ( is_array(product_db) ? product_db : JSON.parse(product_json));
-				    			product_name_search_results = array_search(
-				    				
-				    				product_db,
-				    				function(product){
-
-				    					var wholesale_price,
-				    						manufacturer_id,
-				    						normalized_name;
-
-				    					wholesale_price = product.WholesalePrice;
-				    					manufacturer_id = product.ManufacturerId;
-				    					normalized_name = product.Name.toLowerCase();
-
-				    					// not a match if ...
-					    					if( (wholesale_price === "" || wholesale_price === null) || // no wholesale price or ... 
-					    						( 
-					    							normalized_name.indexOf( value_to_search ) < 0 && // search value not in name and ... 
-					    							matched_manufacturer_id_array.indexOf( manufacturer_id ) < 0 // manufacturer id isn't in array of matches
-					    						)  
-					    					){
-
-					    						return false;
-					    					}
-
-				    					return true;
-				    				},
-				    				function(matched_product){
-
-			    					   matched_product.markup = "<li>" +
-					    										  "<span class='name'>" + manufacturer_id_model[matched_product.ManufacturerId].Name + " " +  matched_product.Name + "</span>" + 
-					    										  "<span class='price'>&#8358;" + matched_product.WholesalePrice + "</span>" +
-					    										"</li>";
-			    					}
-				    			);
-
-			    			// sort results
-			    				var manufacturer_id_model = key_model_db_json(manufacturer_db, 'Id');
-			    				
-			    				array_sort = require('stable');
-
-			    				product_name_search_results = array_sort(product_name_search_results, function(a,b){
-
-			    					var name_of_a,
-			    						name_of_b,
-			    						manufacturer_of_a,
-										manufacturer_of_b;
-
-										manufacturer_of_a = manufacturer_id_model[ a.ManufacturerId ].Name.toLowerCase(); 
-										manufacturer_of_b = manufacturer_id_model[ b.ManufacturerId ].Name.toLowerCase(); 
-
-										if (manufacturer_of_a === manufacturer_of_b){ 
-
-											name_of_a = a.Name.toLowerCase();
-											name_of_b = b.Name.toLowerCase();
-
-											if(name_of_a > name_of_b){
-
-												return 1;
-											}
-
-											else if (name_of_a < name_of_b){
-
-												return -1;
-											}
-
-											else {
-
-												return 0;
-											}
-										} 
-
-										else if (manufacturer_of_a < manufacturer_of_b){
-
-											return -1;
-										}
-
-										else {
-
-											return 1;
-										}
-			    				});
-
-			    			// add each match to markup
-			    				array_each(product_name_search_results, function(this_product){
-
-			    					markup_to_render += this_product.markup;
-			    				});
-
-			    			// render results
-			    				setTimeout(function(){
-
-			    					var cached_previous_matches = previous_matches,
-			    						cached_current_matches = product_name_search_results;
-
-			    					return function(){
-
-										// results changed 
-											if( is_array(cached_previous_matches) && !array_is_equal(cached_current_matches, cached_previous_matches) ){
-
-												toggleClass(product_search_results_section, "swap-row-color");
-											}
-
-										// unique result
-											if(cached_current_matches.length === 1){
-
-												addClass(product_search_results_section, "unique-match");
-											}
-
-											else {
-
-												removeClass(product_search_results_section, "unique-match");
-											}
-
-										// render
-						    				product_search_results_section.innerHTML = markup_to_render;
-						    				search_products_section_subheader.innerHTML =  product_name_search_results.length + " match" + (product_name_search_results.length > 1 ? "es" : "") + "<span class='expanded'> for \"" + value_to_search + "\"</span>";						
-											    						
-										// logging
-											var search_total_duration = Date.now() - search_start_time;								
-				    						
-				    						if(search_total_duration > 16){ _app.publish('slow-search-render'); }
-			    					}
-			    				}(), 0);
-
-			    			// reset search internals
-				    			previous_value = value_to_search;
-				    			previous_matches = product_name_search_results;
-				    			delete search_buffer;
-				    			search_buffer_duration = 200;
-		    			}
-		    		}
-		    	}());
-
-			// activate main menu
-				viewport.addEventListener("click", function(e){
-
-					// required vars
-						var click_target = e.target,
-							array_of_focal_elements;
-
-					// filter clicks that arent from the collapsible menu
-					// filter clicks from active menu
-		                while( !hasClass(click_target, "collapsible") && click_target != viewport ){
-
-		                    if( click_target.parentNode == screen || click_target.parentNode == document.body ){ return; }
-		                    click_target = click_target.parentNode;
-		                }
-
-		            	if(click_target === viewport || click_target === active_collapsible){ return; }
-
-		            // deactivate active menu
-		            	if(typeof active_collapsible != "undefined" || active_collapsible != null){
-
-		            		removeClass(active_collapsible, "active");
-		            	}
-
-		            // activate clicked menu
-		            	addClass(click_target, "active");
-		            	active_collapsible = click_target;
-
-		            // set focus on focal element
-		            	array_of_focal_elements = click_target.getElementsByClassName('focal-element');
-		            	if(array_of_focal_elements.length > 0){
-
-		            		array_of_focal_elements[0].focus();
-		            	}
-
-		            _app.publish('section-view-switched', click_target.id);
-				});
+			setupMainMenu();
 
 			_app.publish('app-setup-complete');
 		}
