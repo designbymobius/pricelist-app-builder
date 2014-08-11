@@ -551,6 +551,10 @@
 
 		// id: clickable-products
 
+		// OUTPUT CHANNELS
+		// * product-is-selected
+		// * all-products-unselected
+
 		function setupClickableProducts(){
 
 			var module_id, previous_click;
@@ -575,26 +579,28 @@
 	                    click_target = click_target.parentNode;
 	                }
 
-	            	if(click_target === product_list){ return; }
+	            	if(click_target === product_list){ 
+
+	            		_app.publish('all-products-unselected');
+	            		return; 
+	            	}
+
+	            // deactivate active product
 	            	if(click_target === previous_click){ 
+
+	            		_app.publish('all-products-unselected');
 
 	            		previous_click = null; 
 	            		return; 
 	            	}
 
-	            // deactivate active menu
-	            	if( hasClass(click_target, 'active') ){
-
-	            		removeClass(product_list, "active-product");
-	            		removeClass(click_target, "active");
-	            		return;
-	            	}
-
-	            // activate clicked menu
+	            // activate clicked product
 	            	addClass(product_list, "active-product");
 	            	addClass(click_target, "active");
 
 	            	previous_click = click_target;
+
+	            	_app.publish('product-is-selected');
 			});
 		}
 
@@ -947,7 +953,13 @@
 					"containerStyle": null
 				});
 
+			// relayout masonry
+				var relayout_masonry = function(){ var masonry = pricelist_masonry; return function(){ masonry.layout(); }}()
+
 				pricelist_masonry.bindResize();
+
+				_app.subscribe('product-is-selected', 'masonry-js', relayout_masonry);
+				_app.subscribe('all-products-unselected', 'masonry-js', relayout_masonry);
 		}
 
 	// get beautified date

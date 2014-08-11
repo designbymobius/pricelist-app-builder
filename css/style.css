@@ -331,11 +331,7 @@ section.active > header > .subtitle {
 	padding-right: .15em;
 }
 
-#product-list.active-product .product{
-
-	opacity: 0.2;
-}
-
+#product-list.active-product .product,
 #product-list.active-product .manufacturer header{
 
 	opacity: 0.4;
@@ -344,6 +340,35 @@ section.active > header > .subtitle {
 #product-list.active-product .product.active{
 
 	opacity: 1;
+	padding: 0;
+	width: 100%;
+}
+
+#product-list.active-product .product.active .name,
+#product-list.active-product .product.active .wholesale-price{
+
+	width: 80%;
+	font-weight: 900;
+	padding-left: 10%;
+	padding-right: 10%;
+	font-size: 1.55em;
+}
+
+#product-list.active-product .product.active .name{
+
+	background-color: #444;
+	color: #fff;
+}
+
+#product-list.active-product .product.active .wholesale-price{
+
+	background-color: salmon;
+	color: #fff;
+}
+
+#product-list.active-product .product.active .wholesale-price .currency{
+
+	color: #ddd;
 }
 
 #product-list .product.search-result{
