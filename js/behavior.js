@@ -46,6 +46,10 @@
 		    // glue modules and events together
 				setupModuleGlue();
 
+			// "sunrise" modules
+				setupGoogleAnalytics();	    		
+				setupAppcache();
+
 			// 	dom-is-ready => setup-app
 				_app.subscribe_once('dom-is-ready', module_id, setup_app);
 				
@@ -62,7 +66,7 @@
 	    	var Observer;
 
 	    	Observer = require('./js/cjs-pubsub.js');
-	    	_app = new Observer({ consoleLog: true });
+	    	_app = new Observer({ consoleLog: false });
     	}
 
     // MODULE: DOM READY
@@ -178,7 +182,9 @@
 			search_products_section = document.getElementById('search-products');
 			product_search_input = document.getElementById('product-search-input');
 			search_products_section_subheader = search_products_section.getElementsByClassName('subtitle')[0];
-			product_search_results_section = search_products_section.getElementsByClassName('content')[0];			
+			product_search_results_section = search_products_section.getElementsByClassName('content')[0];
+
+			product_list = document.getElementById('product-list');		
 		}
 
 	// MODULE: REMOVE TOUCH DELAY
@@ -194,6 +200,7 @@
 
 		// OUTPUT CHANNELS
 		// * product-database-searched
+		// * product-search-reset
 
 		function setupSearchProducts(){
 
@@ -249,6 +256,8 @@
 
 									removeClass(product_search_results_section, "unique-match");
 									removeClass(product_search_results_section, "swap-row-color");
+
+									_app.publish('product-search-reset');
 
 				    				return;
 				    			}
@@ -399,7 +408,13 @@
 										// logging
 											var search_total_duration = Date.now() - search_start_time;								
 				    						
-				    						_app.publish('product-database-searched');
+				    						_app.publish('product-database-searched', {
+
+				    							matches: cached_current_matches,
+				    							term: value_to_search,
+				    							total_matches: cached_current_matches.length
+				    						});
+
 				    						if(search_total_duration > 16){ _app.publish('slow-search-render'); }
 			    					}
 			    				}(), 0);
@@ -459,7 +474,78 @@
 	            _app.publish('section-view-switched', click_target.id);
 			});
 		}
-		
+
+	// MODULE: HIGHLIGHT SEARCH
+
+		// id: highlight-search
+
+		// REQ CHANNELS
+		// * product-database-searched
+		// * product-search-reset
+
+		function setupHighlightSearch(data){
+
+			var module_id = "highlight-search",
+				array_sort = require('stable'),
+				previous_highlights= [];
+
+
+			_app.subscribe('product-database-searched', module_id, function(data){
+
+				var search_results, results_crawler, manufacturer_nodes, highlighted_nodes;
+
+				// req vars
+					manufacturer_nodes = product_list.getElementsByClassName('manufacturer');
+
+					search_results = data.notificationParams.matches;
+
+					results_crawler = require('prop-search');
+
+					highlighted_nodes = [];
+
+				// remove old matches
+					remove_previous_highlights();
+
+				// style result and push it into a collection 
+					array_each(search_results, function(match, index){
+
+						var manufacturer_dom_node, product_dom_node;
+
+						// sort products alphabetically
+							products_grouped_by_manufacturer[match.ManufacturerId] = array_sort(products_grouped_by_manufacturer[match.ManufacturerId], arrayAlphaSort);
+
+						// get manufacturer dom node
+							manufacturer_dom_node = manufacturer_nodes[ results_crawler.search( manufacturer_db, function(manufacturer){ return manufacturer.Id === match.ManufacturerId }, match.ManufacturerId)[0].key ];
+						
+						// get product dom node
+							var product_index_search = results_crawler.search( products_grouped_by_manufacturer[match.ManufacturerId], function(product){ return product.Id === match.Id }, match.Id);
+							product_index = product_index_search[0].key;
+
+							product_dom_node = manufacturer_dom_node.getElementsByClassName('product')[ product_index ];
+
+						// highlight
+							addClass(product_dom_node, 'search-result');
+						
+						// mark as highlighted
+							highlighted_nodes.push(product_dom_node);
+					});
+	
+					previous_highlights = highlighted_nodes;
+			});
+
+			_app.subscribe('product-search-reset', module_id, remove_previous_highlights);
+
+			function remove_previous_highlights(){
+
+				if(previous_highlights.length > 0){
+
+					for(var i = 0; i < previous_highlights.length; i += 1){
+
+						removeClass( previous_highlights[i] , 'search-result');
+					}
+				}
+			}
+		}
 
 	function render_cached_product_list(){
 
@@ -697,18 +783,17 @@
 	// setup app
 		function setup_app(){
 
-			setupGoogleAnalytics();
-    		
     		setupDeviceStorage();
-			setupAppcache();
 
 			setupDOMQueryCache();
 
 		    setupRemoveTouchDelay();
 
 		    setupSearchProducts();
+			setupHighlightSearch();
 
 			setupMainMenu();
+
 
 			_app.publish('app-setup-complete');
 		}
@@ -864,7 +949,7 @@
 				array_index = array_length - i;
 				current_item = array_to_walk[array_index];
 
-				processing_function( current_item, i );
+				processing_function( current_item, array_index );
 			}
 		}
 

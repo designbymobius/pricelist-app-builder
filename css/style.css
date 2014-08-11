@@ -331,6 +331,16 @@ section.active > header > .subtitle {
 	padding-right: .15em;
 }
 
+#product-list .product.search-result{
+
+	background-color: #ff9;
+}
+
+#product-list .product.search-result:nth-of-type(even){
+
+	background-color: #ff6;
+}
+
 @media only screen and (min-width:600px)  { 
 
 	#product-list .manufacturer {
