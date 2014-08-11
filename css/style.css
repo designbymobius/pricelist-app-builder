@@ -331,6 +331,16 @@ section.active > header > .subtitle {
 	padding-right: .15em;
 }
 
+#product-list.active-product .product{
+
+	opacity: 0.4;
+}
+
+#product-list.active-product .product.active{
+
+	opacity: 1;
+}
+
 #product-list .product.search-result{
 
 	background-color: #ff9;

@@ -487,7 +487,7 @@
 
 			var module_id = "highlight-search",
 				array_sort = require('stable'),
-				previous_highlights= [];
+				previous_highlights = [];
 
 
 			_app.subscribe('product-database-searched', module_id, function(data){
@@ -545,6 +545,57 @@
 					}
 				}
 			}
+		}
+
+	// MODULE: CLICKABLE PRODUCTS
+
+		// id: clickable-products
+
+		function setupClickableProducts(){
+
+			var module_id, previous_click;
+
+			module_id = "clickable-products";
+
+			product_list.addEventListener('click', function(e){
+
+				// required vars
+					var click_target = e.target;
+
+				// cleanup previous 
+					if( hasClass(product_list,'active-product') ){
+
+						removeClass(previous_click, 'active');
+						removeClass(product_list, 'active-product');
+					}
+
+				// filter clicks that arent from a product
+	                while( !hasClass(click_target, "product") && click_target != product_list ){
+
+	                    click_target = click_target.parentNode;
+	                }
+
+	            	if(click_target === product_list){ return; }
+	            	if(click_target === previous_click){ 
+
+	            		previous_click = null; 
+	            		return; 
+	            	}
+
+	            // deactivate active menu
+	            	if( hasClass(click_target, 'active') ){
+
+	            		removeClass(product_list, "active-product");
+	            		removeClass(click_target, "active");
+	            		return;
+	            	}
+
+	            // activate clicked menu
+	            	addClass(product_list, "active-product");
+	            	addClass(click_target, "active");
+
+	            	previous_click = click_target;
+			});
 		}
 
 	function render_cached_product_list(){
@@ -793,6 +844,7 @@
 			setupHighlightSearch();
 
 			setupMainMenu();
+			setupClickableProducts();
 
 
 			_app.publish('app-setup-complete');
