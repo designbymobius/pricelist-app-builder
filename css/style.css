@@ -333,6 +333,11 @@ section.active > header > .subtitle {
 
 #product-list.active-product .product{
 
+	opacity: 0.2;
+}
+
+#product-list.active-product .manufacturer header{
+
 	opacity: 0.4;
 }
 
