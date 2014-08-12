@@ -11,6 +11,8 @@
 
 		product_db,
 		manufacturer_db,
+		product_id_keystore,
+		manufacturer_id_keystore,
 		products_grouped_by_manufacturer,
 
 		deviceStorage,
@@ -553,6 +555,7 @@
 
 		// OUTPUT CHANNELS
 		// * product-is-selected
+		// * product-is-deselected
 		// * all-products-unselected
 
 		function setupClickableProducts(){
@@ -571,6 +574,8 @@
 
 						removeClass(previous_click, 'active');
 						removeClass(product_list, 'active-product');
+
+	           			 _app.publish('product-is-deselected', { 'dom': previous_click, 'database_id': previous_click.getAttribute('data-attribute-dbid') });
 					}
 
 				// filter clicks that arent from a product
@@ -600,8 +605,69 @@
 
 	            	previous_click = click_target;
 
-	            	_app.publish('product-is-selected');
+	            _app.publish('product-is-selected', { 'dom': click_target, 'database_id': click_target.getAttribute('data-attribute-dbid') });
 			});
+		}
+
+	// MODULE: PRODUCT OPTIONS
+
+		// id: product-options
+
+		// REQ CHANNELS
+		// * product-is-selected
+		// * product-is-deselected
+
+		// OUTPUT CHANNELS
+		// * optionized-a-product
+
+		function setupProductOptions(){
+
+			var module_id = "product-options";
+
+			_app.subscribe('product-is-selected', module_id, function(data){
+
+				// req vars
+					var product, product_id, product_dom_node, product_name_node, 
+						manufacturer_name, 
+						notification;
+
+					notification = data.notificationParams;
+
+					product_id = notification.database_id;
+
+					product_dom_node = notification.dom;
+
+				// filter optionized products
+					if(product_dom_node.getAttribute('data-attribute-optionized') == "true"){ return; }
+
+				// optionize this product
+					product_name_node = product_dom_node.getElementsByClassName('name')[0];
+
+					product_id_keystore = product_id_keystore || key_model_db_json(product_db, 'Id');
+					manufacturer_id_keystore = manufacturer_id_keystore || key_model_db_json(manufacturer_db, 'Id');
+
+					product = product_id_keystore[ product_id ];
+
+					manufacturer_name = manufacturer_id_keystore[ product.ManufacturerId ].Name;
+
+					product_name_node.innerHTML = "<span class='collapsed manufacturer-name'>" + manufacturer_name + " </span><span>" + product_name_node.innerHTML + "</span>";
+
+					product_dom_node.innerHTML += "<div class='collapsed buy-product'>buy</div>";
+
+					var buy_button = product_dom_node.getElementsByClassName('buy-product')[0];
+						buy_button.addEventListener('click', buy_button_behavior);
+
+					product_dom_node.setAttribute('data-attribute-optionized', true);
+
+					_app.publish('optionized-a-product', notification);
+			});	
+
+			function buy_button_behavior(e){
+
+				e.stopPropagation();
+
+				alert('Online Ordering will be Activated on September 1, 2014');
+			}
 		}
 
 	function render_cached_product_list(){
@@ -851,7 +917,7 @@
 
 			setupMainMenu();
 			setupClickableProducts();
-
+			setupProductOptions();
 
 			_app.publish('app-setup-complete');
 		}
@@ -959,6 +1025,7 @@
 				pricelist_masonry.bindResize();
 
 				_app.subscribe('product-is-selected', 'masonry-js', relayout_masonry);
+				_app.subscribe('optionized-a-product', 'masonry-js', relayout_masonry);
 				_app.subscribe('all-products-unselected', 'masonry-js', relayout_masonry);
 		}
 
