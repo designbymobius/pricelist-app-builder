@@ -654,6 +654,51 @@
 			}
 		}
 
+	// MODULE: PRODUCT IMAGE
+
+		// id: product-image
+
+		// REQ CHANNELS
+		// * product-is-selected
+
+		// OUTPUT CHANNELS
+		// * product-image-loaded
+
+		function setupProductImage(){
+
+			var module_id = "product-image";
+
+			_app.subscribe('product-is-selected', module_id, function(data){ 
+
+				var notification, product_dom_node, img_src;
+
+				notification = data.notificationParams;
+				product_dom_node = notification.dom;
+
+				if(product_dom_node.getAttribute('data-attribute-imgloaded') == "true"){ return; }
+
+				img_src = product_dom_node.getAttribute('data-attribute-imgsrc');
+
+				var img_shell = document.createElement("img");
+
+				img_shell.addEventListener('load', function(){
+
+					var html_gen = document.createElement('div');
+
+					html_gen.innerHTML = "<div class='image collapsed'><img src='" + img_src + "'></div>";
+
+					var product_price_node = product_dom_node.getElementsByClassName('wholesale-price')[0];
+					product_dom_node.insertBefore(html_gen.getElementsByClassName('image')[0], product_price_node);
+
+					product_dom_node.setAttribute('data-attribute-imgloaded', "true");
+
+					_app.publish('product-image-loaded');
+				});
+
+				img_shell.setAttribute('src', img_src);
+			});
+		}
+
 	function render_cached_product_list(){
 
 		var cached_product_json,
@@ -902,6 +947,7 @@
 			setupMainMenu();
 			setupClickableProducts();
 			setupProductOptions();
+			setupProductImage();
 
 			_app.publish('app-setup-complete');
 		}
@@ -939,11 +985,9 @@
 				products_grouped_by_manufacturer = collection_model_db_json(product_db, 'ManufacturerId');
 
 			// iterate over manufacturer list
-				for(var i = manufacturer_db.length; i >= 1; i -= 1 ){
+				array_each( manufacturer_db, function(current_manufacturer){
 
 					// set current manufacturer and details
-						current_manufacturer_index = manufacturer_db.length - i;
-						current_manufacturer = manufacturer_db[ current_manufacturer_index ];
 						current_manufacturer_has_listable_product = false;
 
 					// add div.manufacturer and .manufacturer header to markup
@@ -955,24 +999,21 @@
 						current_manufacturer_products = array_sort( current_manufacturer_products, arrayAlphaSort);			
 
 					// iterate over current manufacturer's products
-						for (var ii = current_manufacturer_products.length; ii >= 1; ii--) {
-
-							// set current product
-								current_product = current_manufacturer_products[current_manufacturer_products.length - ii];
+						array_each( current_manufacturer_products, function(current_product){
 
 							// filter products with no wholesale price
-								if(!current_product.WholesalePrice || typeof current_product.WholesalePrice == "undefined" || current_product.WholesalePrice == null){ continue; }
-							
+								if(!current_product.WholesalePrice || typeof current_product.WholesalePrice == "undefined" || current_product.WholesalePrice == null){ return; }
+
 							// listable product for this manufacturer found
 								if(!current_manufacturer_has_listable_product){ current_manufacturer_has_listable_product = true; }
 
 							// add product to markup
-								markup += "<div class='product' data-attribute-dbid='" + current_product.Id + "'>" + 
+								markup += "<div class='product' data-attribute-dbid='" + current_product.Id + "' data-attribute-imgsrc='http://res.cloudinary.com/hrowcuozo/image/upload/dpr_1.0,fl_png8,t_default-width/v1407926493/" + current_manufacturer.Name.toLowerCase() + "-" + current_product.Name.toLowerCase() + ".jpg'>" + 
 											"<div class='name'><span class='collapsed manufactuer-name'>" + current_manufacturer.Name + " </span><span>" + current_product.Name + "</span></div>" +
 											"<div class='wholesale-price'><span class='currency'>&#8358;</span>" + current_product.WholesalePrice + "</div>" +
 										    "<div class='collapsed buy-product'>buy</div>" +
 										  "</div>";
-						};
+						});
 
 					// close div.manufacturer in markup
 						markup += "</div>";
@@ -982,7 +1023,7 @@
 							
 							empty_manufacturers_index_array.push(current_manufacturer_index);
 						}
-				}
+				});
 
 			// render markup
 				container.innerHTML = markup;
@@ -1014,6 +1055,7 @@
 				pricelist_masonry.bindResize();
 
 				_app.subscribe('product-is-selected', 'masonry-js', relayout_masonry);
+				_app.subscribe('product-image-loaded', 'masonry-js', relayout_masonry);
 				_app.subscribe('optionized-a-product', 'masonry-js', relayout_masonry);
 				_app.subscribe('all-products-unselected', 'masonry-js', relayout_masonry);
 

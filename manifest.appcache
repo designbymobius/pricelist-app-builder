@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# Time: Fri Jul 14 2004 38:50:14 GMT+0070 (W. Central Africa Standard Time)
+# Time: Fri Jul 14 2004 38:14:05 GMT+0070 (W. Central Africa Standard Time)
 
 CACHE:
 index.html
@@ -14,6 +14,7 @@ font/icomoon.ttf
 font/icomoon.svg
 
 NETWORK:
+http://res.cloudinary.com
 http://www.google-analytics.com
 http://pricingapp.designbymobi.us
 http://fathomless-atoll-7008.herokuapp.com
