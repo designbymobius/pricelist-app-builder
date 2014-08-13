@@ -68,7 +68,7 @@
 	    	var Observer;
 
 	    	Observer = require('./js/cjs-pubsub.js');
-	    	_app = new Observer({ consoleLog: false });
+	    	_app = new Observer({ consoleLog: true });
     	}
 
     // MODULE: DOM READY
@@ -450,7 +450,7 @@
 				// filter clicks from active menu
 	                while( !hasClass(click_target, "collapsible") && click_target != viewport ){
 
-	                    if( click_target.parentNode == screen || click_target.parentNode == document.body ){ return; }
+	                    if( click_target.parentNode == document.body ){ return; }
 	                    click_target = click_target.parentNode;
 	                }
 
@@ -539,13 +539,10 @@
 
 			function remove_previous_highlights(){
 
-				if(previous_highlights.length > 0){
+				array_each(previous_highlights, function(highlighted){
 
-					for(var i = 0; i < previous_highlights.length; i += 1){
-
-						removeClass( previous_highlights[i] , 'search-result');
-					}
-				}
+					removeClass( highlighted, 'search-result');
+				});
 			}
 		}
 
@@ -560,7 +557,7 @@
 
 		function setupClickableProducts(){
 
-			var module_id, previous_click;
+			var module_id, previous_click, manufacturer_nodes;
 
 			module_id = "clickable-products";
 
@@ -614,57 +611,44 @@
 		// id: product-options
 
 		// REQ CHANNELS
-		// * product-is-selected
-		// * product-is-deselected
+		// * product-list-rendered
 
 		// OUTPUT CHANNELS
-		// * optionized-a-product
+		// * product-options-activated
 
 		function setupProductOptions(){
 
 			var module_id = "product-options";
 
-			_app.subscribe('product-is-selected', module_id, function(data){
+			_app.subscribe('product-list-rendered', module_id, function(){
 
-				// req vars
-					var product, product_id, product_dom_node, product_name_node, 
-						manufacturer_name, 
-						notification;
+				var manufacturer_nodes = product_list.getElementsByClassName('manufacturer');
 
-					notification = data.notificationParams;
+				array_each(manufacturer_nodes, function(manufacturer){
 
-					product_id = notification.database_id;
+					manufacturer.addEventListener('click', function(e){
 
-					product_dom_node = notification.dom;
+						var click_target = e.target;
 
-				// filter optionized products
-					if(product_dom_node.getAttribute('data-attribute-optionized') == "true"){ return; }
+						// filter clicks that arent from a buy button
+			                while( !hasClass(click_target, "buy-product") && click_target != manufacturer ){
 
-				// optionize this product
-					product_name_node = product_dom_node.getElementsByClassName('name')[0];
+			                    if( click_target.parentNode == document.body ){ return; }
+			                    click_target = click_target.parentNode;
+			                }
 
-					product_id_keystore = product_id_keystore || key_model_db_json(product_db, 'Id');
-					manufacturer_id_keystore = manufacturer_id_keystore || key_model_db_json(manufacturer_db, 'Id');
+			            	if(click_target === manufacturer){ return; }
 
-					product = product_id_keystore[ product_id ];
+			            // do buy button stuff
+				            buy_button_behavior();
+							e.stopPropagation();
+					});
+				});
 
-					manufacturer_name = manufacturer_id_keystore[ product.ManufacturerId ].Name;
+				_app.publish('product-options-activated');
+			});
 
-					product_name_node.innerHTML = "<span class='collapsed manufacturer-name'>" + manufacturer_name + " </span><span>" + product_name_node.innerHTML + "</span>";
-
-					product_dom_node.innerHTML += "<div class='collapsed buy-product'>buy</div>";
-
-					var buy_button = product_dom_node.getElementsByClassName('buy-product')[0];
-						buy_button.addEventListener('click', buy_button_behavior);
-
-					product_dom_node.setAttribute('data-attribute-optionized', true);
-
-					_app.publish('optionized-a-product', notification);
-			});	
-
-			function buy_button_behavior(e){
-
-				e.stopPropagation();
+			function buy_button_behavior(){
 
 				alert('Online Ordering will be Activated on September 1, 2014');
 			}
@@ -923,6 +907,10 @@
 		}
 
 	// render product list
+
+		// OUTPUT CHANNELS
+		// * product-list-rendered
+
 		function render_product_list(){
 
 			// required variables
@@ -980,8 +968,9 @@
 
 							// add product to markup
 								markup += "<div class='product' data-attribute-dbid='" + current_product.Id + "'>" + 
-											"<div class='name'>" + current_product.Name + "</div>" +
+											"<div class='name'><span class='collapsed manufactuer-name'>" + current_manufacturer.Name + " </span><span>" + current_product.Name + "</span></div>" +
 											"<div class='wholesale-price'><span class='currency'>&#8358;</span>" + current_product.WholesalePrice + "</div>" +
+										    "<div class='collapsed buy-product'>buy</div>" +
 										  "</div>";
 						};
 
@@ -1027,6 +1016,8 @@
 				_app.subscribe('product-is-selected', 'masonry-js', relayout_masonry);
 				_app.subscribe('optionized-a-product', 'masonry-js', relayout_masonry);
 				_app.subscribe('all-products-unselected', 'masonry-js', relayout_masonry);
+
+			_app.publish('product-list-rendered');
 		}
 
 	// get beautified date

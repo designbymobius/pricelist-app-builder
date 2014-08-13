@@ -394,17 +394,18 @@ section.active > header > .subtitle {
 
 #product-list.active-product .product.active .wholesale-price .currency{
 
+	font-weight: 100;
 	color: #dfd;
 }
 
 #product-list .product.search-result{
 
-	background-color: #ff9;
+	background-color: #ffa;
 }
 
 #product-list .product.search-result:nth-of-type(even){
 
-	background-color: #ff6;
+	background-color: #ff7;
 }
 
 @media only screen and (min-width:600px)  { 
