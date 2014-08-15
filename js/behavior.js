@@ -1008,7 +1008,7 @@
 								if(!current_manufacturer_has_listable_product){ current_manufacturer_has_listable_product = true; }
 
 							// add product to markup
-								markup += "<div class='product' data-attribute-dbid='" + current_product.Id + "' data-attribute-imgsrc='http://res.cloudinary.com/hrowcuozo/image/upload/dpr_1.0,fl_png8,t_default-width/" + current_manufacturer.Name.toLowerCase() + "-" + current_product.Name.toLowerCase().replace(/ /g, "-").replace(/%20/g, "-") + ".jpg'>" + 
+								markup += "<div class='product' data-attribute-dbid='" + current_product.Id + "' data-attribute-imgsrc='http://res.cloudinary.com/hrowcuozo/image/upload/t_wholesale_webapp/" + current_manufacturer.Name.toLowerCase() + "-" + current_product.Name.toLowerCase().replace(/ /g, "-").replace(/%20/g, "-") + ".jpg'>" + 
 											"<div class='name'><span class='collapsed manufactuer-name'>" + current_manufacturer.Name + " </span><span>" + current_product.Name + "</span></div>" +
 											"<div class='wholesale-price'><span class='currency'>&#8358;</span>" + current_product.WholesalePrice + "</div>" +
 										    "<div class='collapsed buy-product'>buy</div>" +
