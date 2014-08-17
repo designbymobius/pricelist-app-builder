@@ -26,7 +26,9 @@
 
 		product_search_input,
     	search_buffer, 
-    	search_buffer_duration;
+    	search_buffer_duration,
+
+    	pricelist_masonry;
 
 	// REQ MODULE: INIT
 
@@ -667,6 +669,7 @@
 		function setupProductImage(){
 
 			var module_id = "product-image";
+			var morpheus = require('morpheus');
 
 			_app.subscribe('product-is-selected', module_id, function(data){ 
 
@@ -675,7 +678,11 @@
 				notification = data.notificationParams;
 				product_dom_node = notification.dom;
 
-				if(product_dom_node.getAttribute('data-attribute-imgloaded') == "true"){ return; }
+				if(product_dom_node.getAttribute('data-attribute-imgloaded') == "true"){ 
+
+					animate_price_opening( product_dom_node );
+					return;
+				}
 
 				img_src = product_dom_node.getAttribute('data-attribute-imgsrc');
 
@@ -688,15 +695,48 @@
 					html_gen.innerHTML = "<div class='image collapsed'><img src='" + img_src + "'></div>";
 
 					var product_price_node = product_dom_node.getElementsByClassName('wholesale-price')[0];
-					product_dom_node.insertBefore(html_gen.getElementsByClassName('image')[0], product_price_node);
+						product_dom_node.insertBefore(html_gen.getElementsByClassName('image')[0], product_price_node);
+
+					animate_price_opening( product_dom_node );
 
 					product_dom_node.setAttribute('data-attribute-imgloaded', "true");
-
-					_app.publish('product-image-loaded');
 				});
 
 				img_shell.setAttribute('src', img_src);
 			});
+
+			function animate_price_opening(product_dom_node){
+
+				var image_component = product_dom_node.getElementsByClassName('image')[0];
+				var animation_completed = false;
+
+
+
+				image_component.style.height = "";
+				var image_component_height = image_component.offsetHeight;
+				pricelist_masonry.layout();
+
+				image_component.style.height = "0px";
+
+
+				morpheus( image_component, {
+
+					duration: 175,
+					height: "+=" + image_component_height + "px",
+					complete: function(){ 
+
+						animation_completed = true;
+						image_component.style.height = "auto";
+
+						_app.subscribe_once('product-is-deselected', module_id, function(){
+							
+							image_component.style.height = "0";
+						});
+
+						_app.publish('product-image-loaded');
+					}
+				});
+			}
 		}
 
 	function render_cached_product_list(){
@@ -963,8 +1003,6 @@
 			var container = document.getElementById('product-list'),
 				markup = "",
 
-				pricelist_masonry,
-
 				current_manufacturer,
 				current_manufacturer_index,
 				current_manufacturer_products,
@@ -1056,7 +1094,6 @@
 
 				_app.subscribe('product-is-selected', 'masonry-js', relayout_masonry);
 				_app.subscribe('product-image-loaded', 'masonry-js', relayout_masonry);
-				_app.subscribe('optionized-a-product', 'masonry-js', relayout_masonry);
 				_app.subscribe('all-products-unselected', 'masonry-js', relayout_masonry);
 
 			_app.publish('product-list-rendered');

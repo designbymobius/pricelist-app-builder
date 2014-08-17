@@ -327,6 +327,12 @@ section.active > header > .subtitle {
 	width: 35%;
 }
 
+#product-list .product .image.collapsed{
+
+	background-color: #fff;
+	height: 0;
+}
+
 #product-list .product .wholesale-price .currency{
 
 	color: #888;
@@ -387,7 +393,7 @@ section.active > header > .subtitle {
 #product-list.active-product .product.active .image.collapsed{
 
 	display: block;
-	background-color: #fff;
+	height: auto;
 }
 
 #product-list.active-product .product.active .image > img{
