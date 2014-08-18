@@ -1,5 +1,8 @@
 {
   "name": "wholesale-pricelist",
   "description": "Another Offline-Capable Webapp for Mizbeach",
-  "version": "0.0.1"
+  "version": "0.0.1",
+  "devDependencies": {
+    "grunt-html-build": "^0.3.2"
+  }
 }
