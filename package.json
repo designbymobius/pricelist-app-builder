@@ -3,6 +3,7 @@
   "description": "Another Offline-Capable Webapp for Mizbeach",
   "version": "0.0.1",
   "devDependencies": {
-    "grunt-html-build": "^0.3.2"
+    "grunt-html-build": "^0.3.2",
+    "grunt-manifest": "^0.4.0"
   }
 }
