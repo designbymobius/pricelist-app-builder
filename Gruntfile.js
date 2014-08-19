@@ -27,11 +27,11 @@ module.exports = function(grunt){
 					options: {
 
 						scripts: {
-							core: ["<%= js_libs %>", "<%= js_main %>"]
+							core: ["temp/js/scripts.min.js"]
 						},
 
 						styles: {
-							base: ["<%= css_libs %>", "<%= css_main %>"]
+							base: ["temp/css/style.min.css"]
 						}
 					}
 				}
@@ -57,15 +57,97 @@ module.exports = function(grunt){
 					dest: 'bin/manifest.appcache'
 				}
 			},
+
+			browserify: {
+
+				app:{
+
+					src: ['src/js/persist.min.js', 'src/js/cjs-pubsub.js'],
+					plugin: ['moment', 'morpheus', 'prop-search', 'stable', 'fastclick'],
+					dest: 'bin/js/browserified.js'
+				}
+			},
+
+			copy: {
+
+				app: {
+
+					files: [
+						{
+							
+							src: ['*'],
+							dest: 'bin/font',
+							cwd: './src/font/',
+							expand: true
+						}
+					]
+				},
+
+				server: {
+
+					files: [
+						{
+	
+							src: ['.htaccess', 'composer.json', 'Procfile'],
+							dest: 'bin/',
+							cwd: './src/',
+							expand: true
+						}
+					]
+				}
+			},
+
+			concat: {
+
+				css: {
+
+					src: ['src/css/*'],
+					dest: 'temp/css/style.css'
+				},
+
+				js: {
+
+					src: ['src/js/browserified.js', 'src/js/masonry.min.js', 'src/js/behavior.js'],
+					dest: 'temp/js/scripts.js'
+				} 
+			},
+
+			cssmin: {
+
+				app: {
+					
+					src: 'temp/css/style.css',
+					dest: 'temp/css/style.min.css'
+				}
+			},
+
+			uglify: {
+
+				app: {
+
+					src: 'temp/js/scripts.js',
+					dest: 'temp/js/scripts.min.js'
+				}
+			},
+
+			clean: ['temp']
 	});
 
 	// ACTIVATE PLUGINS
 
+		grunt.loadNpmTasks('grunt-contrib-concat');
+		grunt.loadNpmTasks('grunt-contrib-cssmin');
+		grunt.loadNpmTasks('grunt-contrib-uglify');
+		grunt.loadNpmTasks('grunt-contrib-clean');
+		grunt.loadNpmTasks('grunt-contrib-copy');
+		grunt.loadNpmTasks('grunt-browserify');
 		grunt.loadNpmTasks('grunt-html-build');
 		grunt.loadNpmTasks('grunt-manifest');
 
 
 	// REGISTER TASKS
 
-		grunt.registerTask('build', ['htmlbuild', 'manifest']);
+		grunt.registerTask('prep-css', ['concat:css', 'cssmin']);
+		grunt.registerTask('prep-js', ['browserify', 'concat:js', 'uglify']);
+		grunt.registerTask('build', ['prep-css', 'prep-js', 'htmlbuild', 'copy', 'manifest', 'clean']);
 }
