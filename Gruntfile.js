@@ -42,7 +42,7 @@ module.exports = function(grunt){
 				app: {
 					
 					options: {
-						basePath: "bin/",
+						basePath: "src/",
 						fallback: ["/ index.html"],
 						network: [	
 									"http://res.cloudinary.com", 
@@ -52,8 +52,9 @@ module.exports = function(grunt){
 								],
 				        timestamp: true,
 				        verbose: false,
+				        preferOnline: false
 					},				
-					src: ['index.html', "<%= css_libs %>", "<%= css_main %>", "<%= js_libs %>", "<%= js_main %>"],
+					src: ['index.html', "js/masonry.*", "font/icomoon.*"],
 					dest: 'bin/manifest.appcache'
 				}
 			},
@@ -64,7 +65,7 @@ module.exports = function(grunt){
 
 					src: ['src/js/persist.min.js', 'src/js/cjs-pubsub.js'],
 					plugin: ['moment', 'morpheus', 'prop-search', 'stable', 'fastclick'],
-					dest: 'bin/js/browserified.js'
+					dest: 'temp/js/browserified.js'
 				}
 			},
 
@@ -78,6 +79,14 @@ module.exports = function(grunt){
 							src: ['*'],
 							dest: 'bin/font',
 							cwd: './src/font/',
+							expand: true
+						},
+
+						{
+							
+							src: ['masonry.min.js'],
+							dest: 'bin/js',
+							cwd: './src/js/',
 							expand: true
 						}
 					]
@@ -107,7 +116,7 @@ module.exports = function(grunt){
 
 				js: {
 
-					src: ['src/js/browserified.js', 'src/js/masonry.min.js', 'src/js/behavior.js'],
+					src: ['src/js/browserified.js', 'src/js/behavior.js'],
 					dest: 'temp/js/scripts.js'
 				} 
 			},
@@ -123,10 +132,18 @@ module.exports = function(grunt){
 
 			uglify: {
 
+				options: {
+
+					mangle: false,
+					exportAll: true
+				},
+
 				app: {
 
-					src: 'temp/js/scripts.js',
-					dest: 'temp/js/scripts.min.js'
+					files:{
+
+						'temp/js/scripts.min.js': ['temp/js/scripts.js']
+					}
 				}
 			},
 
@@ -148,6 +165,6 @@ module.exports = function(grunt){
 	// REGISTER TASKS
 
 		grunt.registerTask('prep-css', ['concat:css', 'cssmin']);
-		grunt.registerTask('prep-js', ['browserify', 'concat:js', 'uglify']);
+		grunt.registerTask('prep-js', ['concat:js', 'uglify']);
 		grunt.registerTask('build', ['prep-css', 'prep-js', 'htmlbuild', 'copy', 'manifest', 'clean']);
 }

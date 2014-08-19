@@ -69,7 +69,7 @@
     		
 	    	var Observer;
 
-	    	Observer = require('./js/cjs-pubsub.js');
+	    	Observer = require('./src/js/cjs-pubsub.js');
 	    	_app = new Observer({ consoleLog: true });
     	}
 
