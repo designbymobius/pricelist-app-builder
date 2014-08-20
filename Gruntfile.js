@@ -27,7 +27,7 @@ module.exports = function(grunt){
 					options: {
 
 						scripts: {
-							core: ["temp/js/scripts.min.js"]
+							core: ["temp/js/browserified.min.js"]
 						},
 
 						styles: {
@@ -59,13 +59,22 @@ module.exports = function(grunt){
 				}
 			},
 
-			browserify: {
+			browserifying: {
 
-				app:{
+				app: {
+					
+					files: {
 
-					src: ['src/js/persist.min.js', 'src/js/cjs-pubsub.js'],
-					plugin: ['moment', 'morpheus', 'prop-search', 'stable', 'fastclick'],
-					dest: 'temp/js/browserified.js'
+						'./temp/js/browserified.js': './src/js/behavior.js'
+					}
+				},
+
+				options: {
+
+					watch: false,
+					map: {
+						'persist': { exports: 'Persist', path: "./src/js/persist.min.js" }
+					}
 				}
 			},
 
@@ -134,15 +143,14 @@ module.exports = function(grunt){
 
 				options: {
 
-					mangle: false,
-					exportAll: true
+					mangle: false
 				},
 
 				app: {
 
-					files:{
+					files: {
 
-						'temp/js/scripts.min.js': ['temp/js/scripts.js']
+						'temp/js/browserified.min.js': ['temp/js/browserified.js']
 					}
 				}
 			},
@@ -156,8 +164,8 @@ module.exports = function(grunt){
 		grunt.loadNpmTasks('grunt-contrib-cssmin');
 		grunt.loadNpmTasks('grunt-contrib-uglify');
 		grunt.loadNpmTasks('grunt-contrib-clean');
+		grunt.loadNpmTasks('grunt-browserifying');
 		grunt.loadNpmTasks('grunt-contrib-copy');
-		grunt.loadNpmTasks('grunt-browserify');
 		grunt.loadNpmTasks('grunt-html-build');
 		grunt.loadNpmTasks('grunt-manifest');
 
@@ -165,6 +173,6 @@ module.exports = function(grunt){
 	// REGISTER TASKS
 
 		grunt.registerTask('prep-css', ['concat:css', 'cssmin']);
-		grunt.registerTask('prep-js', ['concat:js', 'uglify']);
+		grunt.registerTask('prep-js', ['browserifying:app', 'uglify:app']);
 		grunt.registerTask('build', ['prep-css', 'prep-js', 'htmlbuild', 'copy', 'manifest', 'clean']);
 }

@@ -69,7 +69,7 @@
     		
 	    	var Observer;
 
-	    	Observer = require('./src/js/cjs-pubsub.js');
+	    	Observer = require('./cjs-pubsub.js');
 	    	_app = new Observer({ consoleLog: true });
     	}
 
@@ -164,6 +164,8 @@
 
 	// MODULE: LOCAL DATABASE
 	    function setupDeviceStorage(){
+
+	    	var Persist = require('persist');
 
 	        deviceStorage = new Persist.Store('Pricing App Storage', {
 
