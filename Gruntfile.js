@@ -4,14 +4,6 @@ module.exports = function(grunt){
 
 		// BUILD-REQUIRED VARS
 
-			js_libs: [
-
-				"src/js/masonry.min.js",
-				"src/js/browserified.js"
-			],
-
-			js_main: "src/js/behavior.js",
-
 			css_libs: [ "src/css/icon-font.css" ],
 
 			css_main: "src/css/style.css",
