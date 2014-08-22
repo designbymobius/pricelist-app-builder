@@ -70,7 +70,7 @@
 	    	var Observer;
 
 	    	Observer = require('./cjs-pubsub.js');
-	    	_app = new Observer({ consoleLog: true });
+	    	_app = new Observer({ consoleLog: false });
     	}
 
     // MODULE: DOM READY
@@ -204,22 +204,39 @@
 
 		// id: search-products
 
+		// REQ CHANNELS
+		// * downloaded-list-rendered
+
 		// OUTPUT CHANNELS
 		// * product-database-searched
 		// * product-search-reset
 
 		function setupSearchProducts(){
 
+			// req vars
+				var find_product, module_id, previous_value;
+
+				module_id = "search-products";
+
 		    // activate search
-		    	product_search_input.addEventListener('input', function(){
+		    	product_search_input.addEventListener('input', function(e){
+		    		
+		    		find_product( e.target.value ); 
+		    	});
+
+				_app.subscribe("downloaded-list-rendered", module_id, function(){
+					
+					find_product( previous_value, true ); 
+				});
+
+			find_product = function(){
 
 		    		var value_to_search,
-		    			previous_value,
 		    			previous_matches;
 
-		    		return function(e){
+		    		return function( search_value, force_search ){
 
-		    			var current_value = e.target.value,
+		    			var current_value = search_value,
 		    				search_start_time,
 		    				search_duration,
 		    				product_name_search_results,
@@ -244,7 +261,7 @@
 		    				// don't search if ...
 				    			if( typeof product_json == 'undefined' || // no product data
 				    				typeof manufacturer_json == 'undefined' || // no manufacturer data
-				    				current_value === previous_value // search value matches last search
+				    				(current_value === previous_value && force_search != true ) // search value matches last search
 				    			){ 
 
 				    				console.log("didn't bother searching .. ");
@@ -322,7 +339,7 @@
 				    				},
 				    				function(matched_product){
 
-			    					   matched_product.markup = "<li>" +
+			    					   matched_product.markup = "<li class='product' data-attribute-dbid='" + matched_product.Id + "'>" +
 					    										  "<span class='name'>" + manufacturer_id_model[matched_product.ManufacturerId].Name + " " +  matched_product.Name + "</span>" + 
 					    										  "<span class='price'>&#8358;" + matched_product.WholesalePrice + "</span>" +
 					    										"</li>";
@@ -416,8 +433,8 @@
 				    						
 				    						_app.publish('product-database-searched', {
 
-				    							matches: cached_current_matches,
 				    							term: value_to_search,
+				    							matches: cached_current_matches,
 				    							total_matches: cached_current_matches.length
 				    						});
 
@@ -432,7 +449,36 @@
 				    			search_buffer_duration = 200;
 		    			}
 		    		}
-		    	}());
+		    }();
+		}
+
+	// MODULE: CLICKABLE SEARCH RESULTS
+
+		// id: clickable-search-results
+
+		function setupClickableSearch(){
+
+			product_search_results_section.addEventListener('click', function(e){
+
+				var search_product;
+
+				search_product = eventIsFromNode(e.target, search_product_node_test, product_search_results_section);
+
+				if( !search_product ){ return; }
+
+				product_id_keystore = is_array(product_id_keystore) ? product_id_keystore : key_model_db_json( product_db, "Id");
+
+				search_product = product_id_keystore[ search_product.getAttribute('data-attribute-dbid') ];
+
+				console.log( search_product );
+			});
+
+			function search_product_node_test( node_to_test ){
+
+				if( hasClass( node_to_test, "product") ){ return true; }
+
+				return false;
+			}
 		}
 
 	// MODULE: MAIN MENU
@@ -487,6 +533,7 @@
 
 		// REQ CHANNELS
 		// * product-database-searched
+		// * product-list-rendered
 		// * product-search-reset
 
 		function setupHighlightSearch(data){
@@ -498,12 +545,47 @@
 
 			_app.subscribe('product-database-searched', module_id, function(data){
 
+				highlight_matched_nodes( data.notificationParams.matches );
+			});
+
+			_app.subscribe('product-search-reset', module_id, remove_previous_highlights);
+
+			_app.subscribe_once('product-list-rendered', module_id, function(){
+
+				var random_search_list, random_digit, search_query;
+
+				random_search_list = ["galaxy", "lumia", "tecno", "x", "o", "blackberry"];
+				random_digit = get_random_digit();
+
+				while( !random_search_list[random_digit] ){
+
+					random_digit = get_random_digit();
+				}
+
+				search_query = random_search_list[random_digit];
+
+				product_search_input.value = search_query;
+
+                if ("createEvent" in document) {
+                    var evt = document.createEvent("HTMLEvents");
+                    evt.initEvent("input", false, true);
+                    product_search_input.dispatchEvent(evt);
+                }
+                
+                else {
+
+                    product_search_input.fireEvent("oninput");
+                }
+			});
+
+			function highlight_matched_nodes( matches ){
+
 				var search_results, results_crawler, manufacturer_nodes, highlighted_nodes;
 
 				// req vars
 					manufacturer_nodes = product_list.getElementsByClassName('manufacturer');
 
-					search_results = data.notificationParams.matches;
+					search_results = matches;
 
 					results_crawler = require('prop-search');
 
@@ -511,6 +593,9 @@
 
 				// remove old matches
 					remove_previous_highlights();
+
+				// exit if empty
+					if( search_results.length < 1 ){ return; }
 
 				// style result and push it into a collection 
 					array_each(search_results, function(match, index){
@@ -537,9 +622,7 @@
 					});
 	
 					previous_highlights = highlighted_nodes;
-			});
-
-			_app.subscribe('product-search-reset', module_id, remove_previous_highlights);
+			}
 
 			function remove_previous_highlights(){
 
@@ -547,6 +630,15 @@
 
 					removeClass( highlighted, 'search-result');
 				});
+			}
+
+			function get_random_digit(){
+
+				var digit_src = Date.now();
+
+				random_digit = digit_src.toString().charAt(12);
+
+				return random_digit;
 			}
 		}
 
@@ -605,6 +697,10 @@
 	            	addClass(click_target, "active");
 
 	            	previous_click = click_target;
+
+	            // cancel default event actions
+	            	e.stopPropagation();
+	            	e.preventDefault();
 
 	            _app.publish('product-is-selected', { 'dom': click_target, 'database_id': click_target.getAttribute('data-attribute-dbid') });
 			});
@@ -849,12 +945,13 @@
 
 		// OUTPUT CHANNELS
 		//	* server-not-reached	
+		//	* downloaded-list-rendered	
 		//	* offline-databases-updated	
 
 		function download_and_render_product_list(){
 
 			// required vars
-			var requested_product_json,
+				var requested_product_json,
 				requested_manufacturer_json,
 				download_timestamp,
 
@@ -862,7 +959,7 @@
 
 			// get product json from server
 				HTTP_POST(
-					'http://pricingapp.designbymobi.us/get-product.php',
+					'http://fathomless-atoll-7008.herokuapp.com/get-product.php',
 					null,
 					function(response){
 
@@ -877,7 +974,7 @@
 
 			// get manufacturer json from server
 				HTTP_POST(
-					'http://pricingapp.designbymobi.us/get-manufacturer.php',
+					'http://fathomless-atoll-7008.herokuapp.com/get-manufacturer.php',
 					null,
 					function(response){
 
@@ -931,6 +1028,8 @@
 				// do rendering
 					render_product_list();
 
+					_app.publish('downloaded-list-rendered');
+
 					setTimeout(function(){
 
 						about_page_section_subheader.innerHTML = "<span class='collapsed confirmation'>" + require('moment')(download_timestamp).calendar() + "</span><span class='expanded confirmation'>current prices</span>";
@@ -977,19 +1076,27 @@
 	// setup app
 		function setup_app(){
 
-    		setupDeviceStorage();
+			// OFFLINE STORAGE
+    			setupDeviceStorage();
 
-			setupDOMQueryCache();
+    		// CACHE DOM NODE LOOKUPS
+				setupDOMQueryCache();
 
-		    setupRemoveTouchDelay();
+			// REMOVE TOUCH INPUT DELAY
+		    	setupRemoveTouchDelay();
 
-		    setupSearchProducts();
-			setupHighlightSearch();
+		    // PRODUCT SEARCH + RELATED FEATURES
+			    setupSearchProducts();
+				setupClickableSearch();
+				setupHighlightSearch();
 
-			setupMainMenu();
-			setupClickableProducts();
-			setupProductOptions();
-			setupProductImage();
+			// ACTIVATE HEADER MENU
+				setupMainMenu();
+
+			// PRODUCT LISTING + RELATED FEATURES
+				setupProductImage();
+				setupProductOptions();
+				setupClickableProducts();
 
 			_app.publish('app-setup-complete');
 		}
@@ -1048,7 +1155,7 @@
 								if(!current_manufacturer_has_listable_product){ current_manufacturer_has_listable_product = true; }
 
 							// add product to markup
-								markup += "<div class='product' data-attribute-dbid='" + current_product.Id + "' data-attribute-imgsrc='http://res.cloudinary.com/hrowcuozo/image/upload/t_wholesale_webapp/" + current_manufacturer.Name.toLowerCase() + "-" + current_product.Name.toLowerCase().replace(/ /g, "-").replace(/%20/g, "-") + ".jpg'>" + 
+								markup += "<div class='product' data-attribute-dbid='" + current_product.Id + "' data-attribute-imgsrc='http://res.cloudinary.com/hrowcuozo/image/upload/t_svelte/" + current_manufacturer.Name.toLowerCase() + "-" + current_product.Name.toLowerCase().replace(/ /g, "-").replace(/%20/g, "-") + ".jpg'>" + 
 											"<div class='name'><span class='collapsed manufactuer-name'>" + current_manufacturer.Name + " </span><span>" + current_product.Name + "</span></div>" +
 											"<div class='wholesale-price'><span class='currency'>&#8358;</span>" + current_product.WholesalePrice + "</div>" +
 										    "<div class='collapsed buy-product'>buy</div>" +
@@ -1221,6 +1328,25 @@
 
             return modelled_db;
         }
+
+    // event is from node
+    	function eventIsFromNode(event_source, node_test, boundary_node){
+
+    		// required vars
+    			var click_target, boundary_node;
+
+	    		click_target = event_source;
+	    		boundary_node = boundary_node.getElementsByClassName ? boundary_node : document.body;
+
+    		// filter clicks from active menu
+	            while( node_test( click_target ) == false && click_target != boundary_node.parentNode ){
+
+	                if( click_target.parentNode == document.body ){ return false; }
+	                click_target = click_target.parentNode;
+	            }
+
+	        return click_target;
+    	}
 
     // XMLHTTP POST
         function HTTP_POST(url, msg, success, fail){

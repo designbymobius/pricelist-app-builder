@@ -37,11 +37,11 @@ module.exports = function(grunt){
 						basePath: "src/",
 						fallback: ["/ index.html"],
 						network: [	
-									"http://res.cloudinary.com", 
-									"http://www.google-analytics.com", 
-									"http://pricingapp.designbymobi.us", 
-									"http://fathomless-atoll-7008.herokuapp.com"
-								],
+							
+							"http://res.cloudinary.com", 
+							"http://www.google-analytics.com", 
+							"http://fathomless-atoll-7008.herokuapp.com"
+						],
 				        timestamp: true,
 				        verbose: false,
 				        preferOnline: false
@@ -64,6 +64,7 @@ module.exports = function(grunt){
 				options: {
 
 					watch: false,
+					sourceMaps: false,
 					map: {
 						'persist': { exports: 'Persist', path: "./src/js/persist.min.js" }
 					}
@@ -101,6 +102,20 @@ module.exports = function(grunt){
 							src: ['.htaccess', 'composer.json', 'Procfile'],
 							dest: 'bin/',
 							cwd: './src/',
+							expand: true
+						}
+					]
+				},
+
+				debug: {
+
+					files: [
+						{
+
+							src: ['browserified.js'],
+							dest: './temp/js/',
+							cwd: './temp/js/',
+							ext: ".min.js",
 							expand: true
 						}
 					]
@@ -165,6 +180,9 @@ module.exports = function(grunt){
 	// REGISTER TASKS
 
 		grunt.registerTask('prep-css', ['concat:css', 'cssmin']);
-		grunt.registerTask('prep-js', ['browserifying:app', 'uglify:app']);
-		grunt.registerTask('build', ['prep-css', 'prep-js', 'htmlbuild', 'copy', 'manifest', 'clean']);
+		grunt.registerTask('prep-debug-js', ['browserifying:app']);
+		grunt.registerTask('prep-js', ['prep-debug-js', 'uglify:app']);
+
+		grunt.registerTask('build', ['prep-css', 'prep-js', 'htmlbuild', 'copy:app', 'copy:server', 'manifest', 'clean']);
+		grunt.registerTask('build-debug', ['prep-css', 'prep-debug-js', 'copy', 'htmlbuild', 'manifest', 'clean']);
 }
