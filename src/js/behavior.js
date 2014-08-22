@@ -750,6 +750,8 @@
 
 			function buy_button_behavior(){
 
+				var alert = require('alertify').alert;
+
 				alert('Online Ordering will be Activated on September 1, 2014');
 			}
 		}

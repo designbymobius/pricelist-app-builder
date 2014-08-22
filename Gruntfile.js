@@ -66,7 +66,8 @@ module.exports = function(grunt){
 					watch: false,
 					sourceMaps: false,
 					map: {
-						'persist': { exports: 'Persist', path: "./src/js/persist.min.js" }
+						'persist': { exports: 'Persist', path: "./src/js/persist.min.js" },
+						'alertify': { exports: 'alertify', path: "./node_modules/alertify/lib/alertify.min.js" }
 					}
 				}
 			},
