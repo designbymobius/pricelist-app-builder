@@ -154,9 +154,11 @@
 	        }
 	        
 	        // new cache ready
-	            function cacheReady(){     
+	            function cacheReady(){
 
-	                alert('Update Installed! Restarting App Now');
+					var alert = require('alertify').alert;    
+
+	                alert('Update Installed! Restarting App Now', 'alertify-warning');
 	                window.applicationCache.swapCache();
 	                location.reload(true);
 	            }
