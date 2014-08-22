@@ -158,10 +158,11 @@
 
 					var alert = require('alertify').alert;    
 
-	                alert('Update Installed! Restarting App Now', 'alertify-warning');
-	                window.applicationCache.swapCache();
-	                location.reload(true);
-	            }
+	                alert('Update Installed! Restarting App Now', function(){
+
+		                window.applicationCache.swapCache();
+		                location.reload(true);
+	                }, 'alertify-warning');	            }
 	    }
 
 	// MODULE: LOCAL DATABASE
