@@ -19,7 +19,7 @@ module.exports = function(grunt){
 					options: {
 
 						scripts: {
-							core: ["temp/js/browserified.min.js"]
+							core: ["temp/js/browserified.js"]
 						},
 
 						styles: {
